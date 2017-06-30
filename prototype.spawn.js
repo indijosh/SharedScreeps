@@ -1,4 +1,4 @@
-var listOfRoles = ['harvester', 'lorry', 'claimer', 'upgrader', 'repairer', 'builder', 'wallRepairer'];
+var listOfRoles = ['harvester', 'lorry', 'claimer', 'upgrader', 'miner', 'repairer', 'builder', 'wallRepairer'];
 
 // create a new function for StructureSpawn
 StructureSpawn.prototype.spawnCreepsIfNecessary =
@@ -14,8 +14,9 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
         //  arrow function, which checks for the creep being a specific role
         /** @type {Object.<string, number>} */
         let numberOfCreeps = {};
-        for (let role of listOfRoles) { 
-            numberOfCreeps[role] = _.sum(Game.creeps, {filer: (creep) => {return creep.memory.role}});
+        for (let role of listOfRoles) {
+            numberOfCreeps[role] = _.sum(creepsInRoom, (c) => c.memory.role == role);
+            console.log(role + numberOfCreeps[role])
         }
         let maxEnergy = room.energyCapacityAvailable;
         let name = undefined;
