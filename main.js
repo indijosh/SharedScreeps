@@ -1,73 +1,35 @@
-var roleHarvester = require('role.harvester');
-var roleUpgrader = require('role.upgrader');
-var roleBuilder = require('role.builder');
-var maxNumberOfCreeps = 8;
-var currentNumberOfCreeps = Object.keys(Game.creeps).length;
+// import modules
+require('prototype.creep');
+require('prototype.tower');
+require('prototype.spawn');
 
 module.exports.loop = function() {
-  for (var name in Memory.creeps) {
-    if (!Game.creeps[name]) {
-      delete Memory.creeps[name];
-      console.log('Clearing non-existing creep memory:', name);
-    }
-  }
-  const extensions = Game.spawns.Spawn1.room.find(FIND_MY_STRUCTURES, {
-    filter: (structure) => {
-      return (structure.structureType == STRUCTURE_EXTENSION)
-    }
-  });
-  if (currentNumberOfCreeps < maxNumberOfCreeps && currentNumberOfCreeps != 0) {
-    if (Game.spawns.Spawn1.room.energyAvailable >= 550) {
-      var newName = Game.spawns['Spawn1'].createCreep([WORK, WORK, WORK, WORK, MOVE, MOVE, CARRY], undefined, {
-        role: 'harvester'
-      });
-      console.log('Spawning new harvester: ' + newName);
-    } else {
-      console.log('Can not afford new harvester. Energy Available: ', Game.spawns.Spawn1.room.energyAvailable, ' / 550');
-    }
-  }
-  if (Game.spawns.Spawn1.room.energyCapacityAvailable < 550) {
-    console.log('true');
-    var newName = Game.spawns['Spawn1'].createCreep([WORK, MOVE, CARRY], undefined, {
-      role: 'harvester'
-    });
-  }
-
-  if (Game.spawns.Spawn1.room.energyAvailable < Game.spawns.Spawn1.room.energyCapacityAvailable) {
-    var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == 'harvester');
-    if (harvesters.length < 1) {
-      for (var name in Game.creeps) {
-        var creep = Game.creeps[name];
-        if (creep.memory.role == 'upgrader') {
-          creep.memory.upgrading = false;
-          creep.memory.role == 'harvester';
+    // check for memory entries of died creeps by iterating over Memory.creeps
+    for (let name in Memory.creeps) {
+        // and checking if the creep is still alive
+        if (Game.creeps[name] == undefined) {
+            // if not, delete the memory entry
+            delete Memory.creeps[name];
         }
-      };
     }
-  }
 
-  if (Game.spawns['Spawn1'].spawning) {
-    var spawningCreep = Game.creeps[Game.spawns['Spawn1'].spawning.name];
-    Game.spawns['Spawn1'].room.visual.text(
-      //'🛠️' + spawningCreep.memory.role,
-      '🛠️' + 'Spawning creep',
-      Game.spawns['Spawn1'].pos.x + 1,
-      Game.spawns['Spawn1'].pos.y, {
-        align: 'left',
-        opacity: 0.8
-      });
-  }
+    // for each creeps
+    for (let name in Game.creeps) {
+        // run creep logic
+        Game.creeps[name].runRole();
+    }
 
-  for (var name in Game.creeps) {
-    var creep = Game.creeps[name];
-    if (creep.memory.role == 'harvester') {
-      roleHarvester.run(creep);
+    // find all towers
+    var towers = _.filter(Game.structures, s => s.structureType == STRUCTURE_TOWER);
+    // for each tower
+    for (let tower of towers) {
+        // run tower logic
+        tower.defend();
     }
-    if (creep.memory.role == 'upgrader') {
-      roleUpgrader.run(creep);
+
+    // for each spawn
+    for (let spawnName in Game.spawns) {
+        // run spawn logic
+        Game.spawns[spawnName].spawnCreepsIfNecessary();
     }
-    if (creep.memory.role == 'builder') {
-      roleBuilder.run(creep);
-    }
-  }
-}
+};

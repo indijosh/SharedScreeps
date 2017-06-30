@@ -1,8 +1,10 @@
+var roleBuilder = require('role.builder');
+
 module.exports = {
     // a function to run the logic for this role
     /** @param {Creep} creep */
     run: function(creep) {
-        // if creep is bringing energy to a structure but has no energy left
+        // if creep is trying to repair something but has no energy left
         if (creep.memory.working == true && creep.carry.energy == 0) {
             // switch state
             creep.memory.working = false;
@@ -13,35 +15,35 @@ module.exports = {
             creep.memory.working = true;
         }
 
-        // if creep is supposed to transfer energy to a structure
+        // if creep is supposed to repair something
         if (creep.memory.working == true) {
-            // find closest spawn, extension or tower which is not full
-            var structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+            // find closest structure with less than max hits
+            // Exclude walls because they have way too many max hits and would keep
+            // our repairers busy forever. We have to find a solution for that later.
+            var structure = creep.pos.findClosestByPath(FIND_STRUCTURES, {
                 // the second argument for findClosestByPath is an object which takes
                 // a property called filter which can be a function
                 // we use the arrow operator to define it
-                filter: (s) => (s.structureType == STRUCTURE_SPAWN
-                             || s.structureType == STRUCTURE_EXTENSION
-                             || s.structureType == STRUCTURE_TOWER)
-                             && s.energy < s.energyCapacity
+                filter: (s) => s.hits < s.hitsMax && s.structureType != STRUCTURE_WALL
             });
 
-            if (structure == undefined) {
-                structure = creep.room.storage;
-            }
-
-            // if we found one
+            // if we find one
             if (structure != undefined) {
-                // try to transfer energy, if it is not in range
-                if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                // try to repair it, if it is out of range
+                if (creep.repair(structure) == ERR_NOT_IN_RANGE) {
                     // move towards it
                     creep.moveTo(structure);
                 }
             }
+            // if we can't fine one
+            else {
+                // look for construction sites
+                roleBuilder.run(creep);
+            }
         }
-        // if creep is supposed to harvest energy from source
+            // if creep is supposed to get energy
         else {
-            creep.getEnergy(false, true);
+            creep.getEnergy(true, true);
         }
     }
 };
