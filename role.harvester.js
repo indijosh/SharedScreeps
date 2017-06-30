@@ -12,21 +12,32 @@ var roleHarvester = {
     }
 
     if (creep.memory.transporting) {
-      var targets = creep.room.find(FIND_STRUCTURES, {
+      const extensions = creep.room.find(FIND_MY_STRUCTURES, {
         filter: (structure) => {
-          return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
-            structure.energy < structure.energyCapacity;
+          return (structure.structureType == STRUCTURE_EXTENSION && structure.energy < structure.energyCapacity)
         }
       });
-      if (targets.length > 0) {
-        if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(targets[0], {
+      if (extensions.length > 0) {
+        if (creep.transfer(extensions[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(extensions[0], {
             visualizePathStyle: {
               stroke: '#ffffff'
             }
           });
         }
-      } else {
+      } else if (Game.spawns['Spawn1'].energy < Game.spawns['Spawn1'].energyCapacity) {
+        if (creep.transfer(Game.spawns.Spawn1, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(Game.spawns.Spawn1, {
+            visualizePathStyle: {
+              stroke: '#ffffff'
+            }
+          });
+        }
+      } else if(Object.keys(Game.creeps).length < 8){
+        creep.memory.transporting = 'false';
+      }
+      else{
+        creep.memory.transporting = 'false';
         creep.memory.role = 'builder';
       }
     } else {

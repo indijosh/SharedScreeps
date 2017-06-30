@@ -1,9 +1,8 @@
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
-var desiredNumberOfHarvesters = 2
-var desiredNumberOfBuilders = 2
-var maxNumberOfCreeps = 4
+var maxNumberOfCreeps = 8;
+var currentNumberOfCreeps = Object.keys(Game.creeps).length;
 
 module.exports.loop = function() {
   for (var name in Memory.creeps) {
@@ -12,41 +11,46 @@ module.exports.loop = function() {
       console.log('Clearing non-existing creep memory:', name);
     }
   }
-	var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == 'harvester');
-
-  if (Object.keys(Game.creeps).length < maxNumberOfCreeps) {
-    if (harvesters.length < desiredNumberOfHarvesters) {
-      var newName = Game.spawns['Spawn1'].createCreep([WORK, WORK, WORK, MOVE, MOVE, CARRY], undefined, {
+  const extensions = Game.spawns.Spawn1.room.find(FIND_MY_STRUCTURES, {
+    filter: (structure) => {
+      return (structure.structureType == STRUCTURE_EXTENSION)
+    }
+  });
+  if (currentNumberOfCreeps < maxNumberOfCreeps && currentNumberOfCreeps != 0) {
+    if (Game.spawns.Spawn1.room.energyAvailable >= 550) {
+      var newName = Game.spawns['Spawn1'].createCreep([WORK, WORK, WORK, WORK, MOVE, MOVE, CARRY], undefined, {
         role: 'harvester'
       });
       console.log('Spawning new harvester: ' + newName);
-    }
-
-    var builders = _.filter(Game.creeps, (creep) => creep.memory.role == 'builder');
-    if (builders.length < desiredNumberOfBuilders) {
-      var newName = Game.spawns['Spawn1'].createCreep([WORK, WORK, WORK, MOVE, MOVE, CARRY], undefined, {
-        role: 'builder'
-      });
-      console.log('Spawning new builder: ' + newName);
+    } else {
+      console.log('Can not afford new harvester. Energy Available: ', Game.spawns.Spawn1.room.energyAvailable, ' / 550');
     }
   }
+  if (Game.spawns.Spawn1.room.energyCapacityAvailable < 550) {
+    console.log('true');
+    var newName = Game.spawns['Spawn1'].createCreep([WORK, MOVE, CARRY], undefined, {
+      role: 'harvester'
+    });
+  }
 
-  if (Game.spawns.Spawn1.room.energyAvailable, Game.spawns.Spawn1.room.energyCapacityAvailable) {
+  if (Game.spawns.Spawn1.room.energyAvailable < Game.spawns.Spawn1.room.energyCapacityAvailable) {
+    var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role == 'harvester');
     if (harvesters.length < 1) {
       for (var name in Game.creeps) {
         var creep = Game.creeps[name];
         if (creep.memory.role == 'upgrader') {
+          creep.memory.upgrading = false;
           creep.memory.role == 'harvester';
         }
-      }
+      };
     }
-
   }
 
   if (Game.spawns['Spawn1'].spawning) {
     var spawningCreep = Game.creeps[Game.spawns['Spawn1'].spawning.name];
     Game.spawns['Spawn1'].room.visual.text(
-      '🛠️' + spawningCreep.memory.role,
+      //'🛠️' + spawningCreep.memory.role,
+      '🛠️' + 'Spawning creep',
       Game.spawns['Spawn1'].pos.x + 1,
       Game.spawns['Spawn1'].pos.y, {
         align: 'left',
