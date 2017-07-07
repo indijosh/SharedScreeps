@@ -109,6 +109,32 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
                 console.log("LongDistanceHarvester" + roomName + ": " + numberOfLongDistanceHarvesters[roomName]);
             }
         }
+
+        // if none of the above caused a spawn command check for NewRoomBuilder
+        /** @type {Object.<string, number>} */
+        let numberOfNewRoomBuilders = {};
+        if (name == undefined) {
+            // count the number of long distance harvesters globally
+            for (let roomName in this.memory.minNumberOfNewRoomBuilders) {
+                    numberOfNewRoomBuilders[roomName] = _.sum(Game.creeps, (c) =>
+                    c.memory.role == 'numberOfNewRoomBuilders' && c.memory.target == roomName)
+
+                if (numberOfNewRoomBuilders[roomName] < this.memory.minNumberOfNewRoomBuilders[roomName]) {
+                    name = this.createNewRoomBuilder(maxEnergy, 2, room.name, roomName, 0);
+                }
+            }
+        }
+
+        // print name to console if spawning was a success
+        if (name != undefined && _.isString(name)) {
+            console.log(this.name + " spawned new creep: " + name + " (" + Game.creeps[name].memory.role + ")");
+            for (let role of listOfRoles) {
+                console.log(role + ": " + numberOfCreeps[role]);
+            }
+            for (let roomName in numberOfNewRoomBuilders) {
+                console.log("numberOfNewRoomBuilders" + roomName + ": " + numberOfNewRoomBuilders[roomName]);
+            }
+        }
     };
 
 // create a new function for StructureSpawn
@@ -164,6 +190,38 @@ StructureSpawn.prototype.createLongDistanceHarvester =
             working: false
         });
     };
+
+// create a new function for StructureSpawn
+StructureSpawn.prototype.createLongDistanceHarvester =
+  function (energy, numberOfWorkParts, home, target, sourceIndex) {
+      // create a body with the specified number of WORK parts and one MOVE part per non-MOVE part
+      var body = [];
+      for (let i = 0; i < numberOfWorkParts; i++) {
+          body.push(WORK);
+      }
+
+      // 150 = 100 (cost of WORK) + 50 (cost of MOVE)
+      energy -= 150 * numberOfWorkParts;
+
+      var numberOfParts = Math.floor(energy / 100);
+      // make sure the creep is not too big (more than 50 parts)
+      numberOfParts = Math.min(numberOfParts, Math.floor((50 - numberOfWorkParts * 2) / 2));
+      for (let i = 0; i < numberOfParts; i++) {
+          body.push(CARRY);
+      }
+      for (let i = 0; i < numberOfParts + numberOfWorkParts; i++) {
+          body.push(MOVE);
+      }
+
+      // create creep with the created body
+      return this.createCreep(body, undefined, {
+          role: 'newRoomBuilder',
+          home: home,
+          target: target,
+          sourceIndex: sourceIndex,
+          working: false
+      });
+  };
 
 // create a new function for StructureSpawn
 StructureSpawn.prototype.createClaimer =

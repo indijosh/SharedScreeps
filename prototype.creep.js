@@ -5,6 +5,7 @@ var roles = {
     repairer: require('role.repairer'),
     wallRepairer: require('role.wallRepairer'),
     longDistanceHarvester: require('role.longDistanceHarvester'),
+    newRoomBuilder: require('role.newRoomBuilder'),
     claimer: require('role.claimer'),
     miner: require('role.miner'),
     lorry: require('role.lorry')
@@ -15,7 +16,7 @@ Creep.prototype.runRole =
         roles[this.memory.role].run(this);
     };
 
-/** @function 
+/** @function
     @param {bool} useContainer
     @param {bool} useSource */
 Creep.prototype.getEnergy =
