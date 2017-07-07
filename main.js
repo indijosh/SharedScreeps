@@ -3,14 +3,21 @@ require('prototype.creep');
 require('prototype.tower');
 require('prototype.spawn');
 
-var minHarvester = 3;
-var minUpgrader = 3;
-var minBuilder = 3;
-var minRepairer = 2;
-var minMiner = 1;
+var minHarvester = 0;
+var minUpgrader = 2;
+var minBuilder = 1;
+var minRepairer = 1;
+var minLorry = 1;
+var minClaimer = 1;
+var minLongDistanceHarvester = 2;
+
+var OtherRoom1 = 'E62S91';
 
 module.exports.loop = function() {
-    Game.spawns.Spawn1.memory.minCreeps = { harvester: minHarvester, upgrader: minUpgrader, builder: minBuilder, repairer: minRepairer, miner: minMiner };
+    //UNCOMMENT THIS TO RESET MEMORY
+    Game.spawns.Spawn1.memory.minCreeps = { harvester: minHarvester, upgrader: minUpgrader, builder: minBuilder, repairer: minRepairer, lorry: minLorry, claimer: minClaimer };
+    Game.spawns.Spawn1.memory.minLongDistanceHarvesters = {E61S91:minLongDistanceHarvester };
+
     // check for memory entries of died creeps by iterating over Memory.creeps
     for (let name in Memory.creeps) {
         // and checking if the creep is still alive
