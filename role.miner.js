@@ -1,6 +1,15 @@
 module.exports = {
     // a function to run the logic for this role
     run: function (creep) {
+      if (creep.memory.target != undefined && creep.room.name != creep.memory.target && creep.memory.working == false) {
+        // find exit to target room
+        var exit = creep.room.findExitTo(creep.memory.target);
+        // move to exit
+        creep.moveTo(creep.pos.findClosestByRange(exit));
+        // return the function to not do anything else
+        return;
+      }
+
         // get source
         let source = Game.getObjectById(creep.memory.sourceId);
         // find container next to source

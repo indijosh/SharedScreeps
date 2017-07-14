@@ -37,8 +37,22 @@ module.exports = {
             }
             // if we can't fine one
             else {
-                // look for construction sites
-                roleBuilder.run(creep);
+                if (creep.memory.target != undefined && creep.room.name != creep.memory.target) {
+                  // find exit to target room
+                  var exit = creep.room.findExitTo(creep.memory.target);
+                  // move to exit
+                  creep.moveTo(creep.pos.findClosestByRange(exit));
+                  // return the function to not do anything else
+                  return;
+                }
+                else if(creep.memory.home != undefined && creep.room.name != creep.memory.home) {
+                  // find exit to home room
+                  var exit = creep.room.findExitTo(creep.memory.home);
+                  // move to exit
+                  creep.moveTo(creep.pos.findClosestByRange(home));
+                  // return the function to not do anything else
+                  return;
+                }
             }
         }
             // if creep is supposed to get energy
