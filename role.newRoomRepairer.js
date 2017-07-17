@@ -4,6 +4,15 @@ module.exports = {
     // a function to run the logic for this role
     /** @param {Creep} creep */
     run: function(creep) {
+        if (creep.memory.target != undefined && creep.room.name != creep.memory.target) {
+            // find exit to target room
+            var exit = creep.room.findExitTo(creep.memory.target);
+            // move to exit
+            creep.moveTo(creep.pos.findClosestByRange(exit));
+            // return the function to not do anything else
+            return;
+        }
+        
         // if creep is trying to repair something but has no energy left
         if (creep.memory.working == true && creep.carry.energy == 0) {
             // switch state
@@ -37,22 +46,7 @@ module.exports = {
             }
             // if we can't fine one
             else {
-                if (creep.memory.target != undefined && creep.room.name != creep.memory.target) {
-                  // find exit to target room
-                  var exit = creep.room.findExitTo(creep.memory.target);
-                  // move to exit
-                  creep.moveTo(creep.pos.findClosestByRange(exit));
-                  // return the function to not do anything else
-                  return;
-                }
-                else if(creep.memory.home != undefined && creep.room.name != creep.memory.home) {
-                  // find exit to home room
-                  var exit = creep.room.findExitTo(creep.memory.home);
-                  // move to exit
-                  creep.moveTo(creep.pos.findClosestByRange(home));
-                  // return the function to not do anything else
-                  return;
-                }
+                roleBuilder.run(creep);
             }
         }
             // if creep is supposed to get energy

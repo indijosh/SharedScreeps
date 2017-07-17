@@ -45,7 +45,6 @@ module.exports = {
               s.structureType == STRUCTURE_STORAGE &&
               s.store[RESOURCE_ENERGY] > 0
           });
-          console.log(structure);
         }
 
         // if we found one
@@ -67,6 +66,7 @@ module.exports = {
     }
     // if creep is supposed to harvest energy from source
     else {
+
       // if in target room
       if (creep.room.name == creep.memory.target) {
         // find source

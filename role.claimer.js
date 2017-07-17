@@ -7,7 +7,8 @@ module.exports = {
       var exit = creep.room.findExitTo(creep.memory.target);
       // move to exit
       creep.moveTo(creep.pos.findClosestByRange(exit));
-    } else {
+    }
+    else {
       creep.room.findExitTo(creep.memory.home);
       // try to claim controller
       if (creep.claimController(creep.room.controller) == ERR_NOT_IN_RANGE) {

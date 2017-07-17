@@ -14,17 +14,12 @@ var minWallRepairer = 1;
 var minLongDistanceHarvester = 1;
 var minNumberOfNewRoomBuilders = 0;
 
-var Room1 = 'E61S92';
-var Room2 = 'E61S91';
 
 module.exports.loop = function() {
   //console.log(Game.spawns.Spawn2.memory);
   //UNCOMMENT THIS TO RESET MEMORY
   //Game.spawns.Spawn1.memory.minCreeps = { harvester: minHarvester, upgrader: minUpgrader, builder: minBuilder, repairer: minRepairer, lorry: minLorry, claimer: minClaimer, attacker: minAttacker };
-  //Game.spawns.Spawn2.memory.minCreeps = { harvester: minHarvester, upgrader: minUpgrader, builder: minBuilder, repairer: minRepairer, lorry: minLorry, claimer: minClaimer };
-  Game.spawns.Spawn1.memory.roomsMining = {E61S92: '', E62S92: ''};
-  //Game.spawns.Spawn2.memory.minLongDistanceHarvesters = {E62S91: minLongDistanceHarvester};
-  //Game.spawns.Spawn1.memory.minNewRoomBuilders = {E61S91:minNumberOfNewRoomBuilders };
+  //Game.spawns.Spawn2.memory.minCreeps = { harvester: minHarvester, upgrader: minUpgrader, builder: minBuilder, repairer: minRepairer, lorry: minLorry, claimer: minClaimer, newRoomRepairer: 1 };
 
   // check for memory entries of died creeps by iterating over Memory.creeps
   for (let name in Memory.creeps) {
@@ -48,6 +43,16 @@ module.exports.loop = function() {
     // run tower logic
     tower.defend();
   }
+
+  const linkFrom = Game.rooms['E61S92'].lookForAt('structure', 34, 33)[0];
+
+  const linkTo = linkFrom.pos.findInRange(FIND_MY_STRUCTURES, 2, {
+    filter: {
+      structureType: STRUCTURE_LINK
+    }
+  })[0];
+
+  linkFrom.transferEnergy(linkTo);
 
   // for each spawn
   for (let spawnName in Game.spawns) {

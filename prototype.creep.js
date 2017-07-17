@@ -5,10 +5,13 @@ var roles = {
   repairer: require('role.repairer'),
   wallRepairer: require('role.wallRepairer'),
   longDistanceHarvester: require('role.longDistanceHarvester'),
+  longDistanceHauler: require('role.longDistanceHauler'),
   newRoomBuilder: require('role.newRoomBuilder'),
+  newRoomRepairer: require('role.newRoomRepairer'),
   claimer: require('role.claimer'),
   miner: require('role.miner'),
   lorry: require('role.lorry'),
+  mineralHarvester: require('role.mineralHarvester'),
 
   attacker: require('role.attacker')
 };
