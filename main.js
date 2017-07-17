@@ -45,12 +45,7 @@ module.exports.loop = function() {
   }
 
   const linkFrom = Game.rooms['E61S92'].lookForAt('structure', 34, 33)[0];
-
-  const linkTo = linkFrom.pos.findInRange(FIND_MY_STRUCTURES, 2, {
-    filter: {
-      structureType: STRUCTURE_LINK
-    }
-  })[0];
+  const linkTo = Game.rooms['E61S92'].lookForAt('structure', 15, 41)[0];
 
   linkFrom.transferEnergy(linkTo);
 
