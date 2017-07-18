@@ -16,10 +16,10 @@ var minNumberOfNewRoomBuilders = 0;
 
 
 module.exports.loop = function() {
-  //console.log(Game.spawns.Spawn2.memory);
+  //Game.spawns.Spawn1.memory.numberOfMiningRoomMiners = {E61S91: 1, E62S92: 2};
+  //console.log(room.mineralType);
   //UNCOMMENT THIS TO RESET MEMORY
   //Game.spawns.Spawn1.memory.minCreeps = { harvester: minHarvester, upgrader: minUpgrader, builder: minBuilder, repairer: minRepairer, lorry: minLorry, claimer: minClaimer, attacker: minAttacker };
-  //Game.spawns.Spawn2.memory.minCreeps = { harvester: minHarvester, upgrader: minUpgrader, builder: minBuilder, repairer: minRepairer, lorry: minLorry, claimer: minClaimer, newRoomRepairer: 1 };
 
   // check for memory entries of died creeps by iterating over Memory.creeps
   for (let name in Memory.creeps) {
@@ -46,8 +46,13 @@ module.exports.loop = function() {
 
   const linkFrom = Game.rooms['E61S92'].lookForAt('structure', 34, 33)[0];
   const linkTo = Game.rooms['E61S92'].lookForAt('structure', 15, 41)[0];
-
-  linkFrom.transferEnergy(linkTo);
+  if(linkTo.energy < linkTo.energyCapacity){
+    linkFrom.transferEnergy(linkTo);
+  }
+  else{
+    linkTo = Game.rooms['E61S92'].lookForAt('structure', 29, 13)[0];
+    linkFrom.transferEnergy(linkTo);
+  }
 
   // for each spawn
   for (let spawnName in Game.spawns) {

@@ -22,7 +22,8 @@ module.exports = {
                 // we use the arrow operator to define it
                 filter: (s) => (s.structureType == STRUCTURE_SPAWN
                              || s.structureType == STRUCTURE_EXTENSION
-                             || s.structureType == STRUCTURE_TOWER)
+                             || s.structureType == STRUCTURE_TOWER
+                             || s.structureType == STRUCTURE_LAB)
                              && s.energy < s.energyCapacity
             });
 
@@ -41,17 +42,16 @@ module.exports = {
         }
         // if creep is supposed to get energy
         else {
-            // find dropped energy
-            let droppedEnergy = creep.pos.findClosestByPath (FIND_DROPPED_RESOURCES)
-
-            if (droppedEnergy == undefined){
+            //find dropped energy
+            //let droppedEnergy = creep.pos.findClosestByPath (FIND_DROPPED_RESOURCES)
+            //if (droppedEnergy == undefined){
               // find closest container
               let container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
                   filter: s => s.structureType == STRUCTURE_CONTAINER
                    && s.store[RESOURCE_ENERGY] > 0
               });
               // if there is no dropped energy or container with energy
-              if (container == undefined && droppedEnergy == undefined) {
+              if (container == undefined) {
                   // find a storage container to draw energy from
                   container = creep.room.storage;
               }
@@ -65,11 +65,11 @@ module.exports = {
                   }
               }
             }
-            else if (droppedEnergy != undefined){
-              if(creep.pickup(droppedEnergy) == ERR_NOT_IN_RANGE) {
-                  creep.moveTo(droppedEnergy);
-              }
-            }
-        }
+            //else if (droppedEnergy != undefined){
+              //if(creep.pickup(droppedEnergy) == ERR_NOT_IN_RANGE) {
+                //  creep.moveTo(droppedEnergy);
+              //}
+            //}
+        //}
     }
 };

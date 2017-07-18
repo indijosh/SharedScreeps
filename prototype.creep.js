@@ -12,7 +12,7 @@ var roles = {
   miner: require('role.miner'),
   lorry: require('role.lorry'),
   mineralHarvester: require('role.mineralHarvester'),
-
+  miningRoomDefender: require('role.miningRoomDefender'),
   attacker: require('role.attacker')
 };
 

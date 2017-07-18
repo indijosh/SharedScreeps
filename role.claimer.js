@@ -11,7 +11,7 @@ module.exports = {
     else {
       creep.room.findExitTo(creep.memory.home);
       // try to claim controller
-      if (creep.claimController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+      if (creep.claimController(creep.room.controller) == ERR_NOT_IN_RANGE && Game.spawns['Spawn1'].memory.claimRoom == creep.room.name) {
         // move towards the controller
         creep.moveTo(creep.room.controller);
       }

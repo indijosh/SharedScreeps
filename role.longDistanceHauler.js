@@ -28,11 +28,12 @@ module.exports = {
       // if in home room
       if (creep.room.name == creep.memory.home) {
         // look for the link structure
-        var structure = Game.rooms['E61S92'].lookForAt('structure', 34, 33)[0];
-        if (structure.energy == structure.energyCapacity)
-        {
-          structure == undefined;
-        }
+        var structure;
+        //= Game.rooms['E61S92'].lookForAt('structure', 34, 33)[0];
+        //if (structure.energy >= (structure.energyCapacity / 2))
+        //{
+        //  structure == undefined;
+        //}
 
         // if the link structure isn't there or if it's full
         if (structure == undefined || structure.energy == structure.energyCapacity) {
@@ -103,7 +104,6 @@ module.exports = {
             creep.memory.targetContainer = highestContainer.id;
           }
         }
-
 
         // if creep has a target container
         if (creep.memory.targetContainer != undefined) {
