@@ -2,6 +2,7 @@
 require('prototype.creep');
 require('prototype.tower');
 require('prototype.spawn');
+var market = require('run.marketAnalysis')
 
 var minHarvester = 0;
 var minUpgrader = 2;
@@ -16,11 +17,11 @@ var minNumberOfNewRoomBuilders = 0;
 
 
 module.exports.loop = function() {
+  //Game.market.deal('59621e3df0f0c0400b5c1b67', 1, 'E61S92');
   //Game.spawns.Spawn1.memory.numberOfMiningRoomMiners = {E61S91: 1, E62S92: 2};
   //console.log(room.mineralType);
   //UNCOMMENT THIS TO RESET MEMORY
   //Game.spawns.Spawn1.memory.minCreeps = { harvester: minHarvester, upgrader: minUpgrader, builder: minBuilder, repairer: minRepairer, lorry: minLorry, claimer: minClaimer, attacker: minAttacker };
-
   // check for memory entries of died creeps by iterating over Memory.creeps
   for (let name in Memory.creeps) {
     // and checking if the creep is still alive
@@ -46,10 +47,9 @@ module.exports.loop = function() {
 
   const linkFrom = Game.rooms['E61S92'].lookForAt('structure', 34, 33)[0];
   const linkTo = Game.rooms['E61S92'].lookForAt('structure', 15, 41)[0];
-  if(linkTo.energy < linkTo.energyCapacity){
+  if (linkTo.energy < linkTo.energyCapacity) {
     linkFrom.transferEnergy(linkTo);
-  }
-  else{
+  } else {
     linkTo = Game.rooms['E61S92'].lookForAt('structure', 29, 13)[0];
     linkFrom.transferEnergy(linkTo);
   }
@@ -59,4 +59,6 @@ module.exports.loop = function() {
     // run spawn logic
     Game.spawns[spawnName].spawnCreepsIfNecessary();
   }
+
+  market.runMarketAnalysis()
 };

@@ -15,7 +15,6 @@ var listOfRoles = ['harvester',
 // create a new function for StructureSpawn
 StructureSpawn.prototype.spawnCreepsIfNecessary =
   function() {
-
     if(this.spawning == null)
     {
       /** @type {Room} */
@@ -127,7 +126,7 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
             if (role == 'lorry') {
               name = this.createLorry(150, room.name);
             } else if (role == 'attacker') {
-              name = this.createAttacker(400, room.name);
+              name = this.createAttacker(800, room.name);
             } else {
               if(room.energyCapacityAvailable >= 800){
                 name = this.createCustomCreep(800, role, room.name);
@@ -446,7 +445,7 @@ StructureSpawn.prototype.createAttacker =
     // create creep with the created body and the role 'attack'
     return this.createCreep(body, undefined, {
       role: 'attacker',
-      target: 'E62S93',
+      target: 'E62S92',
       home: home
     });
   };

@@ -16,7 +16,7 @@ module.exports = {
       // switch state
       creep.memory.working = false;
     }
-    // if creep is harvesting energy but is full
+    // if creep is picking up energy but is full
     else if (creep.memory.working == false && creep.carry.energy == creep.carryCapacity) {
       // switch state
       creep.memory.working = true;
@@ -27,13 +27,17 @@ module.exports = {
     if (creep.memory.working == true) {
       // if in home room
       if (creep.room.name == creep.memory.home) {
-        // look for the link structure
         var structure;
-        //= Game.rooms['E61S92'].lookForAt('structure', 34, 33)[0];
-        //if (structure.energy >= (structure.energyCapacity / 2))
-        //{
-        //  structure == undefined;
-        //}
+        // look for the link structure if spawn is full
+        if(creep.memory.target == 'E62S92'){
+            if(creep.room.energyAvailable == creep.room.energyCapacityAvailable){
+                structure = Game.rooms['E61S92'].lookForAt('structure', 34, 33)[0];
+                if (structure.energy >= (structure.energyCapacity / 2))
+                {
+                    structure == undefined;
+                }
+            }
+        }
 
         // if the link structure isn't there or if it's full
         if (structure == undefined || structure.energy == structure.energyCapacity) {
@@ -73,6 +77,12 @@ module.exports = {
     }
     // if creep is supposed to get energy
     else {
+        const droppedResource = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES);
+        if(droppedResource){
+            if(creep.pickup(droppedResource) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(droppedResource);
+            }
+        }
       // if creep is in target room
       if (creep.room.name == creep.memory.target) {
         // if creep doesn't already have a target container in memory

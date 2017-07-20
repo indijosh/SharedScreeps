@@ -48,6 +48,12 @@ module.exports = {
             creep.moveTo(structureTarget);
           }
         }
+        else{
+          flag = Game.flags.defendFlag;
+          if (flag){
+            creep.moveTo(flag);
+          }
+        }
       }
     }
   }
