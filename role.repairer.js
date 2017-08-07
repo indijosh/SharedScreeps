@@ -35,27 +35,22 @@ module.exports = {
                     creep.moveTo(structure);
                 }
             }
-            // if we can't fine one
+            if (structure == undefined){
+              var structure = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+                  // the second argument for findClosestByPath is an object which takes
+                  // a property called filter which can be a function
+                  // we use the arrow operator to define it
+                  filter: (s) => s.hits < 100000 && 
+                  s.structureType == STRUCTURE_RAMPART
+              });
+            }
+            // if we can't find one
             else {
-                if (creep.memory.target != undefined && creep.room.name != creep.memory.target) {
-                  // find exit to target room
-                  var exit = creep.room.findExitTo(creep.memory.target);
-                  // move to exit
-                  creep.moveTo(creep.pos.findClosestByRange(exit));
-                  // return the function to not do anything else
-                  return;
-                }
-                else if(creep.memory.home != undefined && creep.room.name != creep.memory.home) {
-                  // find exit to home room
-                  var exit = creep.room.findExitTo(creep.memory.home);
-                  // move to exit
-                  creep.moveTo(creep.pos.findClosestByRange(home));
-                  // return the function to not do anything else
-                  return;
-                }
+               roleBuilder.run(creep);
             }
         }
-            // if creep is supposed to get energy
+
+        // if creep is supposed to get energy
         else {
             creep.getEnergy(true, true);
         }

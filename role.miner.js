@@ -1,6 +1,22 @@
 module.exports = {
   // a function to run the logic for this role
   run: function(creep) {
+    // if(creep.memory.needsBoosting){
+    //   // if from E61S92, boost parts
+    //   if(creep.memory.home == 'E61S92'){
+    //     for(let part in creep.body)
+    //     {
+    //       if(part.type == "work" && part.boost == undefined){
+    //
+    //       }
+    //     }
+    //   }
+    //   else{
+    //     creep.memory.needsBoosting = false;
+    //   }
+    // }
+    // else
+    // {
     if (creep.memory.target != undefined && creep.room.name != creep.memory.target && creep.memory.working == false) {
       // find exit to target room
       var exit = creep.room.findExitTo(creep.memory.target);

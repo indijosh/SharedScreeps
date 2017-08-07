@@ -13,6 +13,7 @@ var roles = {
   lorry: require('role.lorry'),
   mineralHarvester: require('role.mineralHarvester'),
   miningRoomDefender: require('role.miningRoomDefender'),
+  localMover: require('role.localMover'),
   attacker: require('role.attacker')
 };
 
@@ -28,6 +29,7 @@ Creep.prototype.getEnergy =
   function(useContainer, useSource) {
     /** @type {StructureContainer} */
     let container;
+
     // if the Creep should look for containers
     if (useContainer) {
       // find closest container

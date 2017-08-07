@@ -11,9 +11,6 @@ module.exports = {
       // return the function to not do anything else
       return;
     }
-    if (creep.memory.target == undefined && creep.room.name == 'E61S92') {
-      creep.moveTo(Game.flags.AttackFlag);
-    }
     // if creep is in target room, find nearest hostile creep
     else {
       // find nearest hostile creep
@@ -49,7 +46,8 @@ module.exports = {
           }
         }
         else{
-          flag = Game.flags.defendFlag;
+          flagName = "idle" + creep.memory.target;
+          flag = Game.flags[flagName];
           if (flag){
             creep.moveTo(flag);
           }

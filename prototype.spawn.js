@@ -1,22 +1,23 @@
-var listOfRoles = ['harvester',
-'lorry',
-'claimer',
-'upgrader',
-'miner',
-'repairer',
-'builder',
-'wallRepairer',
-'attacker',
-'longDistanceHauler',
-'newRoomRepairer',
-'mineralHarvester',
-'miningRoomDefender'];
+var listOfRoles = ['attacker',
+  'builder',
+  'claimer',
+  'harvester',
+  'localMover',
+  'longDistanceHauler',
+  'lorry',
+  'miner',
+  'mineralHarvester',
+  'miningRoomDefender',
+  'newRoomRepairer',
+  'repairer',
+  'upgrader',
+  'wallRepairer'
+];
 
 // create a new function for StructureSpawn
 StructureSpawn.prototype.spawnCreepsIfNecessary =
   function() {
-    if(this.spawning == null)
-    {
+    if (this.spawning == null) {
       /** @type {Room} */
       let room = this.room;
 
@@ -77,34 +78,6 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
           }
         }
       }
-      // if none of the above caused a spawn command check for MiningRoomMiner
-      /** @type {Object.<string, number>} */
-      let numberOfMiningRoomMiners = {};
-      if (name == undefined) {
-        // count the number of long distance harvesters globally
-        for (let roomName in this.memory.numberOfMiningRoomMiners) {
-          if (Game.rooms[roomName]) {
-            let sources = Game.rooms[roomName].find(FIND_SOURCES);
-            // iterate over all sources
-            for (let source of sources) {
-              // if the source has no miner
-              if (!_.some(creepsFromRoom, c => c.memory.role == 'miner' && c.memory.sourceId == source.id)) {
-                // check whether or not the source has a container
-                /** @type {Array.StructureContainer} */
-                let containers = source.pos.findInRange(FIND_STRUCTURES, 1, {
-                  filter: s => s.structureType == STRUCTURE_CONTAINER
-                });
-                // if there is a container next to the source
-                if (containers.length > 0 && maxEnergy >= 550) {
-                  // spawn a miner
-                  name = this.createMiner(source.id, room.name, roomName);
-                  break;
-                }
-              }
-            }
-          }
-        }
-      }
 
       // if none of the above caused a spawn command check for other roles
       if (name == undefined) {
@@ -128,10 +101,9 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
             } else if (role == 'attacker') {
               name = this.createAttacker(800, room.name);
             } else {
-              if(room.energyCapacityAvailable >= 800){
+              if (room.energyCapacityAvailable >= 800) {
                 name = this.createCustomCreep(800, role, room.name);
-              }
-              else{
+              } else {
                 name = this.createCustomCreep(maxEnergy, role, room.name);
               }
             }
@@ -140,81 +112,77 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
         }
       }
 
-      // if none of the above caused a spawn command check for MiningRoomRepairers
+      // if none of the above caused a spawn command check need for mining room creeps
       /** @type {Object.<string, number>} */
-      let numberOfMiningRoomRepairers = {};
+      let numberOfMiningRoomRepairers = {},
+        numberOfMiningRoomDefenders = {},
+        numberOfMiningRoomHaulers = {};
       if (name == undefined) {
-        // count the number of long distance harvesters globally
-        for (let roomName in this.memory.numberOfMiningRoomRepairers) {
-          numberOfMiningRoomRepairers[roomName] = _.sum(Game.creeps, (c) =>
-            c.memory.role == 'newRoomRepairer' && c.memory.target == roomName)
-          if (numberOfMiningRoomRepairers[roomName] < this.memory.numberOfMiningRoomRepairers[roomName]) {
-            name = this.createNewRoomRepairer(800, 'newRoomRepairer', room.name, roomName);
+        // count the number of long distance miners in each room. This will only
+        // work if there is vision in that room since we need to count the sources
+        // in the room.
+        for (let roomName in this.memory.miningRooms) {
+          if (Game.rooms[roomName]) {
+            // find all the sources in the room
+            let sources = Game.rooms[roomName].find(FIND_SOURCES);
+            // iterate over all sources
+            for (let source of sources) {
+
+              // if the source has no miner
+              if (!_.some(creepsFromRoom, c => c.memory.role == 'miner' && c.memory.sourceId == source.id)) {
+                // check whether or not the source has a container
+                /** @type {Array.StructureContainer} */
+                let containers = source.pos.findInRange(FIND_STRUCTURES, 1, {
+                  filter: s => s.structureType == STRUCTURE_CONTAINER
+                });
+                // if there is a container next to the source
+                if (containers.length > 0 && maxEnergy >= 550) {
+                  // spawn a miner
+                  name = this.createMiner(source.id, room.name, roomName);
+                  break;
+                }
+              }
+            }
           }
+
+          // if we don't need a miner, spawn a repairer
+          if (name == undefined) {
+            numberOfMiningRoomRepairers[roomName] = _.sum(Game.creeps, (c) =>
+              c.memory.role == 'newRoomRepairer' && c.memory.target == roomName)
+            if (numberOfMiningRoomRepairers[roomName] < this.memory.miningRooms[roomName].numberOfMiningRoomRepairers) {
+              name = this.createNewRoomRepairer(800, 'newRoomRepairer', room.name, roomName);
+            }
+          }
+
+          // spawn a hauler if needed
+          if (name == undefined) {
+            numberOfMiningRoomHaulers[roomName] = _.sum(Game.creeps, (c) =>
+              c.memory.role == 'longDistanceHauler' && c.memory.target == roomName)
+
+            if (numberOfMiningRoomHaulers[roomName] < this.memory.miningRooms[roomName].numberOfMiningRoomHaulers) {
+              name = this.createLongDistanceHauler(maxEnergy, room.name, roomName);
+            }
+          }
+
+          // spawn a defender if needed
+          if (name == undefined) {
+            numberOfMiningRoomDefenders[roomName] = _.sum(Game.creeps, (c) =>
+              c.memory.role == 'attacker' && c.memory.target == roomName)
+            if (numberOfMiningRoomDefenders[roomName] < this.memory.miningRooms[roomName].numberOfMiningRoomDefenders) {
+              name = this.createMiningRoomDefender(maxEnergy, room.name, roomName);
+            }
+          }
+
         }
       }
-
-      // if none of the above caused a spawn command check for MiningRoomDefenders
-      /** @type {Object.<string, number>} */
-      let numberOfMiningRoomDefenders = {};
-      if (name == undefined) {
-        // count the number of long distance harvesters globally
-        for (let roomName in this.memory.numberOfMiningRoomDefenders) {
-          numberOfMiningRoomRepairers[roomName] = _.sum(Game.creeps, (c) =>
-            c.memory.role == 'miningRoomDefender' && c.memory.target == roomName)
-          if (numberOfMiningRoomDefenders[roomName] < this.memory.numberOfMiningRoomDefenders[roomName]) {
-            name = this.createMiningRoomDefender(maxEnergy, 'miningRoomDefender', room.name, roomName);
-          }
-        }
-      }
-
-      // if none of the above caused a spawn command check for LongDistanceHarvesters
-      /** @type {Object.<string, number>} */
-      let numberOfLongDistanceHaulers = {};
-      if (name == undefined) {
-        // count the number of long distance harvesters globally
-        for (let roomName in this.memory.numberOfLongDistanceHaulers) {
-          numberOfLongDistanceHaulers[roomName] = _.sum(Game.creeps, (c) =>
-            c.memory.role == 'longDistanceHauler' && c.memory.target == roomName)
-
-          if (numberOfLongDistanceHaulers[roomName] < this.memory.numberOfLongDistanceHaulers[roomName]) {
-            name = this.createLongDistanceHauler(maxEnergy, room.name, roomName);
-          }
-        }
-      }
-
-      // if none of the above caused a spawn command check for LongDistanceHarvesters
-      /** @type {Object.<string, number>} */
-      let numberOfLongDistanceHarvesters = {};
-      if (name == undefined) {
-        // count the number of long distance harvesters globally
-        for (let roomName in this.memory.minLongDistanceHarvesters) {
-          numberOfLongDistanceHarvesters[roomName] = _.sum(Game.creeps, (c) =>
-            c.memory.role == 'longDistanceHarvester' && c.memory.target == roomName)
-
-          if (numberOfLongDistanceHarvesters[roomName] < this.memory.minLongDistanceHarvesters[roomName]) {
-            name = this.createLongDistanceHarvester(maxEnergy, 2, room.name, roomName, 0);
-          }
-        }
-      }
-
-      // if none of the above caused a spawn command check for NewRoomBuilder
-      /** @type {Object.<string, number>} */
-      let numberOfNewRoomBuilders = {};
-      if (name == undefined) {
-        // count the number of NewRoomBuilders globally
-        for (let roomName in this.memory.minNumberOfNewRoomBuilders) {
-          numberOfNewRoomBuilders[roomName] = _.sum(Game.creeps, (c) =>
-            c.memory.role == 'numberOfNewRoomBuilders' && c.memory.target == roomName)
-
-          if (numberOfNewRoomBuilders[roomName] < this.memory.minNumberOfNewRoomBuilders[roomName]) {
-            name = this.createNewRoomBuilder(maxEnergy, 2, room.name, roomName, 0);
-          }
-        }
-      }
-
+      // if we are spawning something, print the details to the console
       if (name != undefined && _.isString(name)) {
-        console.log(this.name + " Spawning " + Game.creeps[name].memory.role);
+        if(Game.creeps[name].memory.target){
+          console.log(this.name + " spawning " + Game.creeps[name].memory.role + " for " + Game.creeps[name].memory.target);
+        }
+        else{
+          console.log(this.name + " spawning " + Game.creeps[name].memory.role + " for home");
+        }
       }
     }
   };
@@ -350,6 +318,7 @@ StructureSpawn.prototype.createClaimer =
 StructureSpawn.prototype.createMiner =
   function(sourceId, home) {
     return this.createCreep([WORK, WORK, WORK, WORK, WORK, MOVE], undefined, {
+      needsBoosting: true,
       role: 'miner',
       sourceId: sourceId,
       home: home
@@ -384,13 +353,13 @@ StructureSpawn.prototype.createLongDistanceHauler =
   function(energy, home, target) {
     // create a balanced body as big as possible with the given energy
     var numberOfParts = Math.floor(energy / 50);
-    // make sure the creep is not too big (more than 50 parts)
-    numberOfParts = Math.min(numberOfParts, Math.floor(50 / 3));
+
+    // make sure the creep isn't more than 50 parts
+    numberOfParts = Math.min(numberOfParts, 50);
+
     var body = [];
-    for (let i = 0; i < numberOfParts; i++) {
+    for (let i = 0; i < numberOfParts / 2; i++) {
       body.push(MOVE);
-    }
-    for (let i = 0; i < numberOfParts; i++) {
       body.push(CARRY);
     }
     // create creep with the created body and the role 'lorry'
@@ -402,32 +371,32 @@ StructureSpawn.prototype.createLongDistanceHauler =
     });
   };
 
-  // create a new function for StructureSpawn
-  StructureSpawn.prototype.createMiningRoomDefender =
-    function(energy, home, target) {
-      // create a balanced body as big as possible with the given energy
-      var numberOfParts = Math.floor(energy / 50);
-      // make sure the creep is not too big (more than 50 parts)
-      numberOfParts = Math.min(numberOfParts, Math.floor(50 / 3));
-      var body = [];
-      for (let i = 0; i < numberOfParts; i++) {
-        body.push(MOVE);
-      }
-      for (let i = 0; i < numberOfParts / 3 - 1; i++) {
-        body.push(ATTACK);
-        body.push(RANGED_ATTACK);
-        body.push(TOUGH);
-      }
-      body.push(HEAL);
+// create a new function for StructureSpawn
+StructureSpawn.prototype.createMiningRoomDefender =
+  function(energy, home, target) {
+    // create a balanced body as big as possible with the given energy
+    var numberOfParts = Math.floor(energy / 50);
+    // make sure the creep is not too big (more than 50 parts)
+    numberOfParts = Math.min(numberOfParts, Math.floor(50 / 3));
+    var body = [];
+    for (let i = 0; i < numberOfParts; i++) {
+      body.push(MOVE);
+    }
+    for (let i = 0; i < numberOfParts / 3 - 1; i++) {
+      body.push(ATTACK);
+      body.push(RANGED_ATTACK);
+      body.push(TOUGH);
+    }
+    body.push(HEAL);
 
-      // create creep with the created body and the role 'lorry'
-      return this.createCreep(body, undefined, {
-        role: 'longDistanceHauler',
-        working: false,
-        home: home,
-        target: target
-      });
-    };
+    // create creep with the created body and the role 'lorry'
+    return this.createCreep(body, undefined, {
+      role: 'attacker',
+      working: false,
+      home: home,
+      target: target
+    });
+  };
 
 // create a new function for StructureSpawn
 StructureSpawn.prototype.createAttacker =
@@ -445,7 +414,7 @@ StructureSpawn.prototype.createAttacker =
     // create creep with the created body and the role 'attack'
     return this.createCreep(body, undefined, {
       role: 'attacker',
-      target: 'E62S92',
+      target: 'E16S18',
       home: home
     });
   };
