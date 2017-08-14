@@ -2,20 +2,9 @@
 require('prototype.creep');
 require('prototype.tower');
 require('prototype.spawn');
+require('run.marketAnalysis');
 var grafana = require('grafana-tracking');
 var reaction = require('run.reaction');
-var market = require('run.marketAnalysis')
-
-var minHarvester = 0;
-var minUpgrader = 2;
-var minBuilder = 1;
-var minRepairer = 1;
-var minLorry = 2;
-var minClaimer = 0;
-var minAttacker = 1;
-var minWallRepairer = 1;
-var minLongDistanceHarvester = 1;
-var minNumberOfNewRoomBuilders = 0;
 
 
 module.exports.loop = function() {
@@ -68,8 +57,19 @@ module.exports.loop = function() {
     Game.spawns[spawnName].spawnCreepsIfNecessary();
   }
 
-  //market.runMarketAnalysis();
+  var terminals = _.filter(Game.structures, s => s.structureType == STRUCTURE_TERMINAL);
+  // for each terminal
+  for (let terminal of terminals) {
+    // run market logic
+    terminal.runMarketAnalysis();
+  }
+
   //reaction.runReaction();
   grafana.collect_stats();
   Memory.stats.cpu.used = Game.cpu.getUsed();
+  for (room in Memory.stats.roomSummary){
+    if (room != null && room.num_enemies > 0){
+      Game.notify("There are " + room.num_enemies + " attacking room " + room.room_name);
+    }
+  }
 };

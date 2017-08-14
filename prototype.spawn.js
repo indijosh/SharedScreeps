@@ -1,17 +1,17 @@
-var listOfRoles = ['attacker',
+var listOfRoles = ['lorry',
   'builder',
   'claimer',
   'harvester',
   'localMover',
   'longDistanceHauler',
-  'lorry',
+  'attacker',
   'miner',
   'mineralHarvester',
   'miningRoomDefender',
   'newRoomRepairer',
   'repairer',
   'upgrader',
-  'wallRepairer'
+  'rampartRepairer'
 ];
 
 // create a new function for StructureSpawn
@@ -82,11 +82,12 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
       // if none of the above caused a spawn command check for other roles
       if (name == undefined) {
         for (let role of listOfRoles) {
+
           // check for claim order
           if (role == 'claimer' && numberOfCreeps[role] < this.memory.minCreeps[role]) {
             if (room.energyAvailable > 650) {
               // try to spawn a claimer
-              name = this.createClaimer(this.memory.claimRoom, room.name);
+              name = this.createClaimer(this.memory.claimRoom, room.name, 'claimer');
               // if that worked
               if (name != undefined && _.isString(name)) {
                 // delete the claim order (could also be used for reserving)
@@ -96,10 +97,15 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
           }
           // if no claim order was found, check other roles
           else if (numberOfCreeps[role] < this.memory.minCreeps[role]) {
+
             if (role == 'lorry') {
               name = this.createLorry(150, room.name);
             } else if (role == 'attacker') {
-              name = this.createAttacker(800, room.name);
+              if (room.energyCapacityAvailable < 850)
+                name = this.createAttacker(room.energyAvailable, room.name);
+              else {
+                name = this.createAttacker(850, room.name)
+              }
             } else {
               if (room.energyCapacityAvailable >= 800) {
                 name = this.createCustomCreep(800, role, room.name);
@@ -108,6 +114,21 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
               }
             }
             break;
+          }
+        }
+      }
+
+      // spawn a room reserver if needed
+      let roomReserver = {}
+      if (name == undefined) {
+        for (let roomName in this.memory.reservedRooms) {
+          roomReserver[roomName] = _.sum(Game.creeps, (c) =>
+            c.memory.role == 'roomReserver' && c.memory.target == roomName)
+          if (Game.rooms[roomName]) {
+            if (roomReserver[roomName] < this.memory.reservedRooms[roomName] &&
+              Game.rooms[roomName].controller.reservation.ticksToEnd < 4000) {
+              name = this.createClaimer(roomName, room.name, 'roomReserver');
+            }
           }
         }
       }
@@ -177,10 +198,9 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
       }
       // if we are spawning something, print the details to the console
       if (name != undefined && _.isString(name)) {
-        if(Game.creeps[name].memory.target){
+        if (Game.creeps[name].memory.target) {
           console.log(this.name + " spawning " + Game.creeps[name].memory.role + " for " + Game.creeps[name].memory.target);
-        }
-        else{
+        } else {
           console.log(this.name + " spawning " + Game.creeps[name].memory.role + " for home");
         }
       }
@@ -306,9 +326,9 @@ StructureSpawn.prototype.createNewRoomBuilder =
 
 // create a new function for StructureSpawn
 StructureSpawn.prototype.createClaimer =
-  function(target, home) {
+  function(target, home, role) {
     return this.createCreep([CLAIM, CLAIM, MOVE, MOVE], undefined, {
-      role: 'claimer',
+      role: role,
       target: target,
       home: home
     });
@@ -380,14 +400,13 @@ StructureSpawn.prototype.createMiningRoomDefender =
     numberOfParts = Math.min(numberOfParts, Math.floor(50 / 3));
     var body = [];
     for (let i = 0; i < numberOfParts; i++) {
-      body.push(MOVE);
-    }
-    for (let i = 0; i < numberOfParts / 3 - 1; i++) {
-      body.push(ATTACK);
-      body.push(RANGED_ATTACK);
       body.push(TOUGH);
     }
-    body.push(HEAL);
+    for (let i = 0; i < numberOfParts / 3; i++) {
+      body.push(ATTACK);
+      body.push(RANGED_ATTACK);
+      body.push(MOVE);
+    }
 
     // create creep with the created body and the role 'lorry'
     return this.createCreep(body, undefined, {
@@ -402,19 +421,22 @@ StructureSpawn.prototype.createMiningRoomDefender =
 StructureSpawn.prototype.createAttacker =
   function(energy, home) {
     // create a body with twice as many ATTACK as MOVE parts
-    var numberOfParts = Math.floor(energy / 150);
+    var numberOfParts = _.floor(energy / 50);
     // make sure the creep is not too big (more than 50 parts)
-    numberOfParts = Math.min(numberOfParts, Math.floor(50 / 3));
+    numberOfParts = Math.min(numberOfParts, 50);
     var body = [];
-    for (let i = 0; i < numberOfParts; i++) {
+    for (let i = 0; i < _.floor(numberOfParts * (1 / 3)); i++) {
+      body.push(TOUGH);
+    }
+    var partsRemaining = numberOfParts - body.length;
+    for (let i = 0; i < partsRemaining / 2; i++) {
       body.push(ATTACK);
       body.push(MOVE);
     }
-
     // create creep with the created body and the role 'attack'
     return this.createCreep(body, undefined, {
       role: 'attacker',
-      target: 'E16S18',
+      target: 'E17S16',
       home: home
     });
   };

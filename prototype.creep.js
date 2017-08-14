@@ -3,7 +3,7 @@ var roles = {
   upgrader: require('role.upgrader'),
   builder: require('role.builder'),
   repairer: require('role.repairer'),
-  wallRepairer: require('role.wallRepairer'),
+  rampartRepairer: require('role.rampartRepairer'),
   longDistanceHarvester: require('role.longDistanceHarvester'),
   longDistanceHauler: require('role.longDistanceHauler'),
   newRoomBuilder: require('role.newRoomBuilder'),
@@ -14,7 +14,8 @@ var roles = {
   mineralHarvester: require('role.mineralHarvester'),
   miningRoomDefender: require('role.miningRoomDefender'),
   localMover: require('role.localMover'),
-  attacker: require('role.attacker')
+  attacker: require('role.attacker'),
+  roomReserver: require('role.roomReserver')
 };
 
 Creep.prototype.runRole =

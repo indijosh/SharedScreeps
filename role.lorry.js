@@ -3,19 +3,23 @@ module.exports = {
   /** @param {Creep} creep */
   run: function(creep) {
     // if creep is bringing energy to a structure but has no energy left
-    if (creep.memory.working == true && creep.carry.energy == 0) {
+    if (creep.memory.working == true && _.sum(creep.carry) == 0) {
       // switch state
       creep.memory.working = false;
     }
     // if creep is harvesting energy but is full
-    else if (creep.memory.working == false && creep.carry.energy == creep.carryCapacity) {
+    else if (creep.memory.working == false &&
+      creep.carry.energy == creep.carryCapacity ||
+      _.sum(creep.carry) == creep.carryCapacity) {
       // switch state
       creep.memory.working = true;
     }
-
-    // if creep is supposed to transfer energy to a structure
+    // if creep is supposed to transfer to a structure
     if (creep.memory.working == true) {
       var structure;
+      if (creep.carry.H > 0) {
+        var structure = creep.room.terminal;
+      }
 
       // find closest spawn, extension or tower which is not full
       if (structure == undefined) {
@@ -29,8 +33,9 @@ module.exports = {
             s.energy < s.energyCapacity
         });
       }
+
       // find a tower if there aren't any spawns or extensions
-      if (structure == undefined){
+      if (structure == undefined) {
         structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
           filter: (s) => (s.structureType == STRUCTURE_TOWER) &&
             s.energy < s.energyCapacity
@@ -40,29 +45,41 @@ module.exports = {
       // look for the terminal first if it has less than 100k energy
       if (structure == undefined && creep.room.terminal != undefined) {
         structure = creep.room.terminal;
-        if (structure.energy >= 100000) {
+        if (structure.store[RESOURCE_ENERGY] >= 100000) {
           structure = undefined;
         }
       }
 
+      // see if there is a link by the miner to drop minerals in
+      if (structure == undefined) {
+        if (creep.memory.linksByMiner != undefined) {
+          var link = creep.memory.linksByMiner[0];
+          if (link != undefined) {
+            structure = Game.getObjectById(link.id);
+          }
+        }
+      }
+
+      // if there is nothing else to put it in, put it in storage
       if (structure == undefined && creep.room.storage != undefined) {
         structure = creep.room.storage;
       }
 
-      // if we found one
+      // if we found something to put it in
       if (structure != undefined) {
         // try to transfer energy, if it is not in range
-        if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-          // move towards it
-          creep.moveTo(structure);
+        for (const resourceType in creep.carry) {
+          if (creep.transfer(structure, resourceType) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(structure);
+          }
         }
       }
     }
     // if creep is supposed to get energy
     else {
       //find dropped energy
-      //let droppedResources = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES)
-      //if (droppedResources == undefined) {
+      let droppedResources // = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
+      if (droppedResources == undefined) {
         // find closest container
         let container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
           filter: s => s.structureType == STRUCTURE_CONTAINER &&
@@ -76,17 +93,21 @@ module.exports = {
 
         // if one was found
         if (container != undefined) {
+          creep.memory.linksByMiner = container.pos.findInRange(FIND_STRUCTURES, 1, {
+            filter: s => s.structureType == STRUCTURE_LINK
+          });
+
           // try to withdraw energy, if the container is not in range
           if (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
             // move towards it
             creep.moveTo(container);
           }
         }
-      } //else if (droppedResources != undefined) {
-        //if (creep.pickup(droppedResources) == ERR_NOT_IN_RANGE) {
-        //  creep.moveTo(droppedResources);
-        //}
-      //}
-    //}
+      } else if (droppedResources != undefined && droppedResources) {
+        if (creep.pickup(droppedResources) == ERR_NOT_IN_RANGE) {
+          creep.moveTo(droppedResources);
+        }
+      }
+    }
   }
 };

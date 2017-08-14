@@ -28,21 +28,7 @@ module.exports = {
 
     // if creep is supposed to get energy
     else {
-      if (creep.memory.home == 'E61S92') {
-        var takeFromLink = Game.getObjectById('596c2da8112566166d817e4b');
-        if (takeFromLink != undefined && takeFromLink.energy > 0) {
-          if (creep.withdraw(takeFromLink, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-            //move towards it
-            creep.moveTo(takeFromLink);
-          }
-        }
-        else{
-          creep.getEnergy(true, true);
-        }
-      }
-      else{
-        creep.getEnergy(true, true);
-      }
+      creep.getEnergy(true, true);
     }
   }
 };

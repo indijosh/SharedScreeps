@@ -6,8 +6,25 @@ StructureTower.prototype.defend =
 
     // if one is found...
     if (target != undefined) {
-      // ...FIRE!
-      this.attack(target);
+      //this.attack(target);
+      var bodyHasAttackPart = false
+      for (var part in target.body) {
+        if (target.body[part].type == 'attack' || target.body[part].type == 'ranged_attack') {
+          bodyHasAttackPart = true;
+        }
+      }
+      if (bodyHasAttackPart == true) {
+        isAlly = false;
+        for (ally in Memory.allies) {
+          if (target.owner.username == ally) {
+            isAlly = true;
+          }
+        }
+        if (!isAlly) {
+          // ...FIRE!
+          this.attack(target);
+        }
+      }
     }
 
     // if one isn't found
@@ -17,7 +34,7 @@ StructureTower.prototype.defend =
           filter: (s) => s.structureType == STRUCTURE_WALL
         });
         for (let wall of walls) {
-          if (wall.hits < 1000000) {
+          if (wall.hits < 1700000) {
             target = wall;
           }
           // if there is one

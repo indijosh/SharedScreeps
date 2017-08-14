@@ -27,7 +27,7 @@ module.exports = {
 
     // if creep is supposed to complete a constructionSite
     if (creep.memory.working == true) {
-      // find creep has a constructionSite in memory
+      // find if creep has a constructionSite in memory
       if (creep.memory.constructionSite != undefined) {
         constructionSite = Game.getObjectById(creep.memory.constructionSite.id)
         // try to build, if the constructionSite is not in range
@@ -47,7 +47,9 @@ module.exports = {
       // if creep does not have a constructionSite in memory
       else {
         // try to find one
-        var constructionSite = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
+        var constructionSite = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES, {
+          filter: (s) => s.structureType != STRUCTURE_RAMPART
+        });
         // if a constructionSite is found
         if (constructionSite != undefined) {
           creep.memory.constructionSite = constructionSite;
