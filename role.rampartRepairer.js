@@ -38,19 +38,9 @@ module.exports = {
 
         var target = undefined;
 
-        // loop with increasing percentages
-        for (let percentage = 0.0001; percentage <= 1; percentage = percentage + 0.0001) {
-          // find a rampart with less than percentage hits
-          for (let rampart of ramparts) {
-            if (rampart.hits / rampart.hitsMax < percentage) {
-              target = rampart;
-              break;
-            }
-          }
-
-          // if there is one
-          if (target != undefined) {
-            // break the loop
+        for (let rampart of ramparts) {
+          if (rampart.hits < 350000) {
+            target = rampart;
             break;
           }
         }

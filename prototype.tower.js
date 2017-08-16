@@ -34,8 +34,21 @@ StructureTower.prototype.defend =
           filter: (s) => s.structureType == STRUCTURE_WALL
         });
         for (let wall of walls) {
-          if (wall.hits < 1700000) {
+          if (wall.hits < 2000000) {
             target = wall;
+          }
+          // if there is one
+          if (target != undefined) {
+            // break the loop
+            break;
+          }
+        }
+        var ramparts = this.room.find(FIND_STRUCTURES, {
+          filter: (s) => s.structureType == STRUCTURE_RAMPART
+        });
+        for (let rampart of ramparts) {
+          if (rampart.hits < 350000) {
+            target = rampart;
           }
           // if there is one
           if (target != undefined) {

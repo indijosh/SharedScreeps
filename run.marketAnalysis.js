@@ -103,16 +103,15 @@ StructureTerminal.prototype.runMarketAnalysis =
         if (highestPrice.price >= minCostOfEnergy) {
           // get the transfer energy cost to make sure we can afford the transfer
           const transferEnergyCost = Game.market.calcTransactionCost(amountToSell, 'E16S17', highestPrice.roomName);
-          if (transferEnergyCost < maxTransferEnergyCost) {
-            // if they are requesting more than we have
-            if (highestPrice.remainingAmount > amountToSell) {
-              // give them what we have
-              Game.market.deal(highestPrice.id, amountToSell, "E16S17");
-            }
-            // otherwise give them what they're requesting
-            else {
-              Game.market.deal(highestPrice.id, highestPrice.remainingAmount, "E16S17");
-            }
+          var energyToSell = this.store[RESOURCE_ENERGY] - transferEnergyCost - 10000;
+          // if they are requesting more than we can send
+          if (highestPrice.remainingAmount > energyToSell) {
+            // give them what we have
+            Game.market.deal(highestPrice.id, energyToSell, "E16S17");
+          }
+          // otherwise give them what they're requesting
+          else {
+            Game.market.deal(highestPrice.id, highestPrice.remainingAmount, "E16S17");
           }
         }
       }

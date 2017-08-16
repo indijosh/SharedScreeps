@@ -2,6 +2,7 @@
 require('prototype.creep');
 require('prototype.tower');
 require('prototype.spawn');
+require('prototype.link');
 require('run.marketAnalysis');
 var grafana = require('grafana-tracking');
 var reaction = require('run.reaction');
@@ -62,6 +63,15 @@ module.exports.loop = function() {
   for (let terminal of terminals) {
     // run market logic
     terminal.runMarketAnalysis();
+  }
+
+  var links = _.filter(Game.structures, s => s.structureType == STRUCTURE_LINK);
+  // for each link in the room
+  for (let link of links) {
+    if(link.energy == link.energyCapacity && link.cooldown == 0){
+      // run link logic
+      link.findLinkType();
+    }
   }
 
   //reaction.runReaction();

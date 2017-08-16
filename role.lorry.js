@@ -54,7 +54,7 @@ module.exports = {
       if (structure == undefined) {
         if (creep.memory.linksByMiner != undefined) {
           var link = creep.memory.linksByMiner[0];
-          if (link != undefined) {
+          if (link != undefined && link.storage < link.storeCapacity) {
             structure = Game.getObjectById(link.id);
           }
         }
@@ -77,35 +77,44 @@ module.exports = {
     }
     // if creep is supposed to get energy
     else {
-      //find dropped energy
-      let droppedResources // = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
-      if (droppedResources == undefined) {
+      var container;
+      // look for link by storage
+      var links = _.filter(creep.room.find(FIND_STRUCTURES), s => s.structureType == STRUCTURE_LINK);
+
+      // for each link in the room
+      for (let link of links) {
+        let isStorageLink = link.pos.findInRange(FIND_STRUCTURES, 2, {
+          filter: s => s.structureType == STRUCTURE_STORAGE
+        })[0];
+        if (isStorageLink != undefined && link.energy > 0) {
+          container = link;
+        }
+      }
+
+      if (container == undefined) {
         // find closest container
-        let container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
           filter: s => s.structureType == STRUCTURE_CONTAINER &&
             s.store[RESOURCE_ENERGY] >= 90
         });
-        // if there is no dropped energy or container with energy
-        if (container == undefined) {
-          // find a storage container to draw energy from
-          container = creep.room.storage;
-        }
+      }
 
-        // if one was found
-        if (container != undefined) {
-          creep.memory.linksByMiner = container.pos.findInRange(FIND_STRUCTURES, 1, {
-            filter: s => s.structureType == STRUCTURE_LINK
-          });
+      // if there is no dropped energy or container with energy
+      if (container == undefined && creep.room.energyAvailable != creep.room.energyCapacityAvailable) {
+        // find a storage container to draw energy from
+        container = creep.room.storage;
+      }
 
-          // try to withdraw energy, if the container is not in range
-          if (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-            // move towards it
-            creep.moveTo(container);
-          }
-        }
-      } else if (droppedResources != undefined && droppedResources) {
-        if (creep.pickup(droppedResources) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(droppedResources);
+      // if one was found
+      if (container != undefined) {
+        creep.memory.linksByMiner = container.pos.findInRange(FIND_STRUCTURES, 1, {
+          filter: s => s.structureType == STRUCTURE_LINK
+        });
+
+        // try to withdraw energy, if the container is not in range
+        if (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+          // move towards it
+          creep.moveTo(container);
         }
       }
     }
