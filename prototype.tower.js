@@ -16,7 +16,7 @@ StructureTower.prototype.defend =
       if (bodyHasAttackPart == true) {
         isAlly = false;
         for (ally in Memory.allies) {
-          if (target.owner.username == ally) {
+          if (target.owner.username == Memory.allies[ally]) {
             isAlly = true;
           }
         }

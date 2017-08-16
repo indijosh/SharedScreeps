@@ -20,7 +20,7 @@ module.exports = {
       if (creepTarget != undefined) {
         isAlly = false;
         for (ally in Memory.allies) {
-          if (creepTarget.owner.username == ally) {
+          if (creepTarget.owner.username == Memory.allies[ally]) {
             isAlly = true;
           }
         }
@@ -59,7 +59,7 @@ module.exports = {
         if (structureTarget != undefined) {
           isAlly = false;
           for (ally in Memory.allies) {
-            if (structureTarget.owner.username == ally) {
+            if (creepTarget.owner.username == Memory.allies[ally]) {
               isAlly = true;
             }
           }
