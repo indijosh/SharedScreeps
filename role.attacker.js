@@ -59,7 +59,7 @@ module.exports = {
         if (structureTarget != undefined) {
           isAlly = false;
           for (ally in Memory.allies) {
-            if (creepTarget.owner.username == Memory.allies[ally]) {
+            if (structureTarget.owner.username == Memory.allies[ally]) {
               isAlly = true;
             }
           }
@@ -76,28 +76,27 @@ module.exports = {
             }
           }
         }
-        if (creep.room.name == 'E16S17') {
-          if (creep.memory.rampartTarget == undefined || creep.memory.rampartTarget == null) {
-            const ramparts = [];
-
-            ramparts.push(Game.getObjectById('598f7b9498f80c6dddef6e49'));
-            ramparts.push(Game.getObjectById('598f7b4661033e6de7d6bb6d'));
-
-            let creepsInRoom = creep.room.find(FIND_MY_CREEPS);
-
-            // iterate over ramparts
-            for (let rampart of ramparts) {
-              // if the source has no miner
-              if (!_.some(creepsInRoom, c => c.memory.role == 'attacker' &&
-                  c.memory.rampartTarget != undefined &&
-                  c.memory.rampartTarget.id == rampart.id)) {
-                creep.memory.rampartTarget = rampart;
-              }
-            }
-          } else {
-            creep.moveTo(Game.getObjectById(creep.memory.rampartTarget.id));
-          }
-        }
+        // if (creep.room.name == 'E16S17') {
+        //   if (creep.memory.rampartTarget == undefined || creep.memory.rampartTarget == null) {
+        //     const ramparts = [];
+        //
+        //     ramparts.push(Game.getObjectById('598f7b9498f80c6dddef6e49'));
+        //     ramparts.push(Game.getObjectById('598f7b4661033e6de7d6bb6d'));
+        //
+        //     let creepsInRoom = creep.room.find(FIND_MY_CREEPS);
+        //
+        //     // iterate over ramparts
+        //     for (let rampart of ramparts) {
+        //       if (!_.some(creepsInRoom, c => c.memory.role == 'attacker' &&
+        //           c.memory.rampartTarget != undefined &&
+        //           c.memory.rampartTarget.id == rampart.id)) {
+        //         creep.memory.rampartTarget = rampart;
+        //       }
+        //     }
+        //   } else {
+        //     creep.moveTo(Game.getObjectById(creep.memory.rampartTarget.id));
+        //   }
+        // }
       }
     }
   }

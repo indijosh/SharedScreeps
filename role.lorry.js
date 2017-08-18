@@ -21,9 +21,9 @@ module.exports = {
         var structure = creep.room.terminal;
       }
 
-      // find closest spawn, extension or tower which is not full
+      // find closest spawn or extension which is not full
       if (structure == undefined) {
-        // find closest spawn, extension or tower which is not full
+        // find closest spawn or extension which is not full
         structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
           // the second argument for findClosestByPath is an object which takes
           // a property called filter which can be a function
@@ -47,16 +47,6 @@ module.exports = {
         structure = creep.room.terminal;
         if (structure.store[RESOURCE_ENERGY] >= 100000) {
           structure = undefined;
-        }
-      }
-
-      // see if there is a link by the miner to drop minerals in
-      if (structure == undefined) {
-        if (creep.memory.linksByMiner != undefined) {
-          var link = creep.memory.linksByMiner[0];
-          if (link != undefined && link.storage < link.storeCapacity) {
-            structure = Game.getObjectById(link.id);
-          }
         }
       }
 
