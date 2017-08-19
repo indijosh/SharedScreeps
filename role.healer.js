@@ -2,11 +2,10 @@ module.exports = {
   // a function to run the logic for this role
   /** @param {Creep} creep */
   run: function(creep) {
-    if(creep.hits < creep.hitsMax){
+    if (creep.hits < creep.hitsMax) {
       creep.move(BOTTOM);
       creep.heal(creep);
-    }
-    else{
+    } else {
       if (creep.memory.target == undefined) {
         creep.memory.target = Game.flags.Flag1
       } else if (creep.room.name != creep.memory.target.room.name) {
@@ -27,8 +26,7 @@ module.exports = {
             creep.moveTo(target);
             creep.say("🚑 HEALING")
           }
-        }
-        else if(creep.pos != Game.flags.Flag1){
+        } else if (creep.pos != Game.flags.Flag1) {
           creep.moveTo(Game.flags.Flag1);
         }
       }
