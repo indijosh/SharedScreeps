@@ -47,10 +47,25 @@ module.exports = {
             // a property called filter which can be a function
             // we use the arrow operator to define it
             filter: (s) => (s.structureType == STRUCTURE_SPAWN ||
-                s.structureType == STRUCTURE_EXTENSION ||
-                s.structureType == STRUCTURE_TOWER) &&
+                s.structureType == STRUCTURE_EXTENSION) &&
               s.energy < s.energyCapacity
           });
+        }
+
+        // find a tower if there aren't any spawns or extensions
+        if (structure == undefined) {
+          structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+            filter: (s) => (s.structureType == STRUCTURE_TOWER) &&
+              (s.energyCapacity - s.energy) >= _.sum(creep.carry)
+          });
+        }
+
+        // look for the terminal first if it has less than 100k energy
+        if (structure == undefined && creep.room.terminal != undefined) {
+          structure = creep.room.terminal;
+          if (structure.store[RESOURCE_ENERGY] >= 100000) {
+            structure = undefined;
+          }
         }
 
         // if there are no spawns, extensions or towers that aren't full

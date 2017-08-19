@@ -46,13 +46,17 @@ StructureTower.prototype.defend =
         var ramparts = this.room.find(FIND_STRUCTURES, {
           filter: (s) => s.structureType == STRUCTURE_RAMPART
         });
-        for (let rampart of ramparts) {
-          if (rampart.hits < 350000) {
-            target = rampart;
+        for (let percentage = 0.0001; percentage <= .1; percentage = percentage + 0.0001) {
+          // find a rampart with less than percentage hits
+          for (let rampart of ramparts) {
+            if (rampart.hits / rampart.hitsMax < percentage) {
+              target = rampart;
+              break
+            }
           }
           // if there is one
           if (target != undefined) {
-            // break the loop
+             // break the loop
             break;
           }
         }

@@ -28,7 +28,20 @@ module.exports = {
 
     // if creep is supposed to get energy
     else {
-      creep.getEnergy(true, true);
+      var controller = creep.room.controller;
+      let controllerLink = controller.pos.findInRange(FIND_STRUCTURES, 2, {
+        filter: s => s.structureType == STRUCTURE_LINK
+      })[0];
+      if (controllerLink != undefined &&
+      controllerLink.energy >= creep.carryCapacity) {
+        if (creep.withdraw(controllerLink, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+          // move towards it
+          creep.moveTo(controllerLink);
+        }
+      }
+      else{
+        creep.getEnergy(true, true);
+      }
     }
   }
 };

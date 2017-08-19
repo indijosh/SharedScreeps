@@ -47,9 +47,7 @@ module.exports = {
       // if creep does not have a constructionSite in memory
       else {
         // try to find one
-        var constructionSite = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES, {
-          filter: (s) => s.structureType != STRUCTURE_RAMPART
-        });
+        var constructionSite = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
         // if a constructionSite is found
         if (constructionSite != undefined) {
           creep.memory.constructionSite = constructionSite;

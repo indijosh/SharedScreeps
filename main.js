@@ -68,10 +68,8 @@ module.exports.loop = function() {
   var links = _.filter(Game.structures, s => s.structureType == STRUCTURE_LINK);
   // for each link in the room
   for (let link of links) {
-    if(link.energy == link.energyCapacity && link.cooldown == 0){
       // run link logic
       link.findLinkType();
-    }
   }
 
   //reaction.runReaction();

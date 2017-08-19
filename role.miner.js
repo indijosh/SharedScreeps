@@ -33,11 +33,16 @@ module.exports = {
       if (creep.memory.isCarryCreep) {
         if (creep.pos.inRangeTo(source, 1)) {
           const totalCarry = _.sum(creep.carry);
-          if(totalCarry == creep.carryCapacity){
+          if (totalCarry == creep.carryCapacity) {
             link = Game.getObjectById(creep.memory.link.id)
-            creep.transfer(link, RESOURCE_ENERGY, totalCarry);
-          }
-          else{
+            if (link != undefined) {
+              if (_.sum(creep.carry) > link.energyCapacity - link.energy) {
+                creep.transfer(link, RESOURCE_ENERGY, link.energyCapacity - link.energy);
+              } else {
+                creep.transfer(link, RESOURCE_ENERGY, totalCarry);
+              }
+            }
+          } else {
             // harvest source
             creep.harvest(source);
           }
@@ -45,9 +50,9 @@ module.exports = {
         // if creep is not on top of the container
         else {
           let goal = {
-              pos: source.pos,
-              range: 1
-            };
+            pos: source.pos,
+            range: 1
+          };
           let ret = PathFinder.search(
             creep.pos, goal, {
               // We need to set the defaults costs higher so that we
@@ -88,8 +93,7 @@ module.exports = {
           let pos = ret.path[0];
           creep.move(creep.pos.getDirectionTo(pos));
         }
-      }
-      else{
+      } else {
         // find container next to source
         let container = source.pos.findInRange(FIND_STRUCTURES, 1, {
           filter: s => s.structureType == STRUCTURE_CONTAINER

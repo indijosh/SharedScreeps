@@ -5,6 +5,7 @@ var listOfRoles = ['lorry',
   'localMover',
   'longDistanceHauler',
   'attacker',
+  'healer',
   'miner',
   'mineralHarvester',
   'miningRoomDefender',
@@ -104,14 +105,19 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
           }
           // if no claim order was found, check other roles
           else if (numberOfCreeps[role] < this.memory.minCreeps[role]) {
-
             if (role == 'lorry') {
               name = this.createLorry(150, room.name);
             } else if (role == 'attacker') {
               if (room.energyCapacityAvailable < 850)
                 name = this.createAttacker(room.energyAvailable, room.name);
               else {
-                name = this.createAttacker(850, room.name)
+                name = this.createAttacker(room.energyCapacityAvailable, room.name)
+              }
+            } else if (role == 'healer') {
+              if (room.energyCapacityAvailable < 700) {
+                name = this.createHealer(room.energyAvailable, room.name);
+              } else {
+                name = this.createHealer(room.energyCapacityAvailable, room.name);
               }
             } else {
               if (room.energyCapacityAvailable >= 800) {
@@ -152,60 +158,73 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
         // in the room.
         for (let roomName in this.memory.miningRooms) {
           if (Game.rooms[roomName]) {
-            // find all the sources in the room
-            let sources = Game.rooms[roomName].find(FIND_SOURCES);
-            // iterate over all sources
-            for (let source of sources) {
-              // if the source has no miner
-              if (!_.some(creepsFromRoom, c => c.memory.role == 'miner' && c.memory.sourceId == source.id)) {
-                // check whether or not the source has a container
-                /** @type {Array.StructureContainer} */
-                let containers = source.pos.findInRange(FIND_STRUCTURES, 1, {
-                  filter: s => s.structureType == STRUCTURE_CONTAINER
-                });
-                // if there is a container next to the source
-                if (containers.length > 0 && maxEnergy >= 550) {
-                  // spawn a miner
-                  name = this.createMiner(source.id, room.name, false, '');
-                  break;
+            const enemy_creeps = Game.rooms[roomName].find(FIND_HOSTILE_CREEPS);
+            if (enemy_creeps.length > 0) {
+              // spawn a defender if needed
+              if (name == undefined) {
+                numberOfMiningRoomDefenders[roomName] = _.sum(Game.creeps, (c) =>
+                  c.memory.role == 'attacker' && c.memory.target == roomName)
+                if (numberOfMiningRoomDefenders[roomName] < 1) {
+                  name = this.createMiningRoomDefender(room.energyAvailable, room.name, roomName);
+                }
+              }
+            } else {
+              if (name == undefined) {
+                numberOfMiningRoomDefenders[roomName] = _.sum(Game.creeps, (c) =>
+                  c.memory.role == 'attacker' && c.memory.target == roomName)
+                if (numberOfMiningRoomDefenders[roomName] < this.memory.miningRooms[roomName].numberOfMiningRoomDefenders) {
+                  name = this.createMiningRoomDefender(maxEnergy, room.name, roomName);
+                }
+              }
+
+              // find all the sources in the room
+              let sources = Game.rooms[roomName].find(FIND_SOURCES);
+              // iterate over all sources
+              for (let source of sources) {
+                // if the source has no miner
+                if (!_.some(creepsFromRoom, c => c.memory.role == 'miner' && c.memory.sourceId == source.id)) {
+                  // check whether or not the source has a container
+                  /** @type {Array.StructureContainer} */
+                  let containers = source.pos.findInRange(FIND_STRUCTURES, 1, {
+                    filter: s => s.structureType == STRUCTURE_CONTAINER
+                  });
+                  // if there is a container next to the source
+                  if (containers.length > 0 && maxEnergy >= 550) {
+                    // spawn a miner
+                    name = this.createMiner(source.id, room.name, false, '');
+                    break;
+                  }
+                }
+              }
+              // if we don't need a miner, spawn a repairer
+              if (name == undefined) {
+                numberOfMiningRoomRepairers[roomName] = _.sum(Game.creeps, (c) =>
+                  c.memory.role == 'newRoomRepairer' && c.memory.target == roomName)
+                if (numberOfMiningRoomRepairers[roomName] < this.memory.miningRooms[roomName].numberOfMiningRoomRepairers) {
+                  if (room.energyCapacityAvailable >= 800) {
+                    name = this.createNewRoomRepairer(800, 'newRoomRepairer', room.name, roomName);
+                  } else {
+                    name = this.createNewRoomRepairer(maxEnergy, 'newRoomRepairer', room.name, roomName);
+                  }
+                }
+              }
+
+              // spawn a hauler if needed
+              if (name == undefined) {
+                numberOfMiningRoomHaulers[roomName] = _.sum(Game.creeps, (c) =>
+                  c.memory.role == 'longDistanceHauler' && c.memory.target == roomName)
+
+                if (numberOfMiningRoomHaulers[roomName] < this.memory.miningRooms[roomName].numberOfMiningRoomHaulers) {
+                  name = this.createLongDistanceHauler(maxEnergy, room.name, roomName);
                 }
               }
             }
           }
-
-          // if we don't need a miner, spawn a repairer
-          if (name == undefined) {
-            numberOfMiningRoomRepairers[roomName] = _.sum(Game.creeps, (c) =>
-              c.memory.role == 'newRoomRepairer' && c.memory.target == roomName)
-            if (numberOfMiningRoomRepairers[roomName] < this.memory.miningRooms[roomName].numberOfMiningRoomRepairers) {
-              name = this.createNewRoomRepairer(800, 'newRoomRepairer', room.name, roomName);
-            }
-          }
-
-          // spawn a hauler if needed
-          if (name == undefined) {
-            numberOfMiningRoomHaulers[roomName] = _.sum(Game.creeps, (c) =>
-              c.memory.role == 'longDistanceHauler' && c.memory.target == roomName)
-
-            if (numberOfMiningRoomHaulers[roomName] < this.memory.miningRooms[roomName].numberOfMiningRoomHaulers) {
-              name = this.createLongDistanceHauler(maxEnergy, room.name, roomName);
-            }
-          }
-
-          // spawn a defender if needed
-          if (name == undefined) {
-            numberOfMiningRoomDefenders[roomName] = _.sum(Game.creeps, (c) =>
-              c.memory.role == 'attacker' && c.memory.target == roomName)
-            if (numberOfMiningRoomDefenders[roomName] < this.memory.miningRooms[roomName].numberOfMiningRoomDefenders) {
-              name = this.createMiningRoomDefender(maxEnergy, room.name, roomName);
-            }
-          }
-
         }
       }
       if (name == undefined &&
         this.room.energyAvailable == this.room.energyCapacityAvailable &&
-        this.room.controller.level <= 3) {
+        this.room.controller.level < 3) {
         name = this.createCustomCreep(room.energyAvailable, 'upgrader', room.name);
       }
       // if we are spawning something, print the details to the console
@@ -349,7 +368,7 @@ StructureSpawn.prototype.createClaimer =
 // create a new function for StructureSpawn
 StructureSpawn.prototype.createMiner =
   function(sourceId, home, needCarryParts, link) {
-    if(needCarryParts == false){
+    if (needCarryParts == false) {
       return this.createCreep([WORK, WORK, WORK, WORK, WORK, MOVE], undefined, {
         needsBoosting: true,
         role: 'miner',
@@ -447,22 +466,40 @@ StructureSpawn.prototype.createMiningRoomDefender =
 StructureSpawn.prototype.createAttacker =
   function(energy, home) {
     // create a body with twice as many ATTACK as MOVE parts
-    var numberOfParts = _.floor(energy / 50);
+    var numberOfParts = _.floor(energy / 65);
     // make sure the creep is not too big (more than 50 parts)
     numberOfParts = Math.min(numberOfParts, 50);
+
     var body = [];
-    for (let i = 0; i < _.floor(numberOfParts * (1 / 3)); i++) {
-      body.push(TOUGH);
-    }
-    var partsRemaining = numberOfParts - body.length;
-    for (let i = 0; i < partsRemaining / 2; i++) {
+    for (let i = 0; i < _.floor(numberOfParts / 2); i++) {
       body.push(ATTACK);
       body.push(MOVE);
     }
     // create creep with the created body and the role 'attack'
     return this.createCreep(body, undefined, {
       role: 'attacker',
-      target: 'E17S16',
+      working: false,
+      home: home,
+      target: ''
+    });
+  };
+
+// create a new function for StructureSpawn
+StructureSpawn.prototype.createHealer =
+  function(energy, home) {
+    // create a body with twice as many ATTACK as MOVE parts
+    var numberOfParts = _.floor(energy / 175);
+    // make sure the creep is not too big (more than 50 parts)
+    numberOfParts = Math.min(numberOfParts, 50);
+    var body = [];
+    for (let i = 0; i < _.floor(numberOfParts / 2); i++) {
+      body.push(HEAL);
+      body.push(MOVE);
+    }
+    // create creep with the created body and the role 'attack'
+    return this.createCreep(body, undefined, {
+      role: 'healer',
+      working: false,
       home: home
     });
   };

@@ -15,6 +15,7 @@ var roles = {
   miningRoomDefender: require('role.miningRoomDefender'),
   localMover: require('role.localMover'),
   attacker: require('role.attacker'),
+  healer: require('role.healer'),
   roomReserver: require('role.roomReserver')
 };
 
