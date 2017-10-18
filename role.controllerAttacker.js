@@ -51,24 +51,38 @@ module.exports = {
         }
         else{
           var exitToRoom = creep.room.findExitTo(creep.memory.target);
-          creep.travelTo(creep.pos.findClosestByRange(exitToRoom));
+          creep.travelTo(creep.pos.findClosestByRange(exitToRoom), {maxRooms: 1});
         }
       }
 
-    } else {
+    }
+
+    // if in target room
+    else {
       creep.room.findExitTo(creep.memory.home);
-      // try to claim controller
-      if (creep.claimController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-        // move towards the controller
-        creep.travelTo(creep.room.controller);
-      }
-      // if global control level is too low
-      if (creep.claimController(creep.room.controller) == ERR_GCL_NOT_ENOUGH) {
-        // try to reserve room
-        if (creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+      if(creep.room.controller.level >= 1 && !creep.room.controller.my){
+        console.log(creep.claimController(creep.room.controller));
+        // try to attack controller
+        if (creep.attackController(creep.room.controller) == ERR_NOT_IN_RANGE) {
           // move towards the controller
           creep.travelTo(creep.room.controller);
         }
+      }
+
+      else {
+        // try to claim controller
+        if (creep.claimController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+          // move towards the controller
+          creep.travelTo(creep.room.controller);
+        }
+        // // if global control level is too low
+        // if (creep.claimController(creep.room.controller) == ERR_GCL_NOT_ENOUGH) {
+        //   // try to reserve room
+        //   if (creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+        //     // move towards the controller
+        //     creep.travelTo(creep.room.controller);
+        //   }
+        // }
       }
     }
   }

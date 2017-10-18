@@ -2,6 +2,52 @@ module.exports = {
   // a function to run the logic for this role
   /** @param {Creep} creep */
   run: function(creep) {
+    // Make sure there aren't any hostile creeps within 5 spaces of the creep
+    closestTarget = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+    if(closestTarget != undefined){
+      if (creep.pos.inRangeTo(closestTarget, 5)) {
+        let targets = _.map(creep.room.find(FIND_HOSTILE_CREEPS),
+          c => ({ pos: c.pos, range: 3 }));
+
+        let ret = PathFinder.search(
+          creep.pos, targets, {
+            // We need to set the defaults costs higher so that we
+            // can set the road cost lower in `roomCallback`
+            plainCost: 2,
+            swampCost: 10,
+            flee: true,
+
+            roomCallback: function(roomName) {
+
+              let room = Game.rooms[roomName];
+              // In this example `room` will always exist, but since
+              // PathFinder supports searches which span multiple rooms
+              // you should be careful!
+              if (!room) return;
+              let costs = new PathFinder.CostMatrix;
+
+              room.find(FIND_STRUCTURES).forEach(function(struct) {
+                if (struct.structureType === STRUCTURE_ROAD) {
+                  // Favor roads over plain tiles
+                  costs.set(struct.pos.x, struct.pos.y, 1);
+                }
+              });
+
+              // Avoid creeps in the room
+              room.find(FIND_CREEPS).forEach(function(creep) {
+                costs.set(creep.pos.x, creep.pos.y, 0xff);
+              });
+
+              return costs;
+            },
+          }
+        );
+        let pos = ret.path[0];
+        creep.move(creep.pos.getDirectionTo(pos));
+        return;
+      }
+    }
+
     // if target is defined and creep is not in target room
     if (creep.memory.target != undefined &&
       creep.room.name != creep.memory.target &&
@@ -9,7 +55,7 @@ module.exports = {
       // find exit to target room
       var exit = creep.room.findExitTo(creep.memory.target);
       // move to exit
-      creep.travelTo(creep.pos.findClosestByRange(exit));
+      creep.travelTo(creep.pos.findClosestByRange(exit), {maxRooms: 1});
       // return the function to not do anything else
       return;
     }
@@ -24,7 +70,6 @@ module.exports = {
       creep.memory.working = true;
       delete creep.memory.targetContainer;
     }
-
     // if creep is supposed to transfer energy to a structure
     if (creep.memory.working == true) {
       // if in home room
@@ -34,10 +79,16 @@ module.exports = {
 
       // if not in target room
       else {
+        // check for a road construction site
+        var onTopOfConstructionSite = creep.pos.findInRange(FIND_CONSTRUCTION_SITES, 0);
+        if(onTopOfConstructionSite != '' || onTopOfConstructionSite != undefined){
+          console.log(creep.build(onTopOfConstructionSite));
+        }
+
         // find exit to target room
         var exit = creep.room.findExitTo(creep.memory.home);
         // move to exit
-        creep.travelTo(creep.pos.findClosestByRange(exit));
+        creep.travelTo(creep.pos.findClosestByRange(exit), {maxRooms: 1});
       }
     }
 
@@ -80,17 +131,17 @@ module.exports = {
           let container = Game.getObjectById(creep.memory.targetContainer);
           if (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
             // move towards it
-            creep.travelTo(container);
+            creep.travelTo(container, {maxRooms: 1});
           }
         }
 
         // if creep cannot find a target container, move to the idle flag
         else {
           idleFlag = _.find(Game.flags, (c) =>
-            c.room.name == creep.memory.target);
+            creep.room.name == creep.memory.target);
           if (idleFlag != undefined) {
             if (!creep.pos.inRangeTo(idleFlag, 1)) {
-              creep.travelTo(idleFlag.pos);
+              creep.travelTo(idleFlag.pos, {maxRooms: 1});
             }
           }
         }
@@ -101,7 +152,7 @@ module.exports = {
         // find exit to target room
         var exit = creep.room.findExitTo(creep.memory.target);
         // move to exit
-        creep.travelTo(creep.pos.findClosestByRange(exit));
+        creep.travelTo(creep.pos.findClosestByRange(exit), {maxRooms: 1});
       }
     }
   }

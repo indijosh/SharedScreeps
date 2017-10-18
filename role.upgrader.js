@@ -21,7 +21,7 @@ module.exports = {
       // try to upgrade the controller
       if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
         // if not in range, move towards the controller
-        creep.moveTo(creep.room.controller);
+        creep.travelTo(creep.room.controller);
       }
     }
 
@@ -29,18 +29,40 @@ module.exports = {
     // if creep is supposed to get energy
     else {
       var controller = creep.room.controller;
-      let controllerLink = controller.pos.findInRange(FIND_STRUCTURES, 2, {
+
+      // find links by the controller
+      let controllerLink = controller.pos.findInRange(FIND_STRUCTURES, 3, {
         filter: s => s.structureType == STRUCTURE_LINK
       })[0];
+
+      // if a link is found and it has enough energy...
       if (controllerLink != undefined &&
-      controllerLink.energy >= creep.carryCapacity) {
+        controllerLink.energy >= creep.carryCapacity) {
         if (creep.withdraw(controllerLink, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
           // move towards it
-          creep.moveTo(controllerLink);
+          creep.travelTo(controllerLink);
         }
       }
-      else{
-        creep.getEnergy(true, true);
+
+      // if there is no link or if the link doesn't have enough energy,
+      // look for a container by controller
+      if (controllerLink == undefined || controllerLink.energy < creep.carryCapacity) {
+        // find a container by the controller
+        let controllerContainer = controller.pos.findInRange(FIND_STRUCTURES, 3, {
+          filter: s => s.structureType == STRUCTURE_CONTAINER
+        })[0];
+        // if one is found and it had enough energy...
+        if (controllerContainer != undefined &&
+          controllerContainer.store[RESOURCE_ENERGY] >= creep.carryCapacity) {
+          if (creep.withdraw(controllerContainer, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            // move towards it
+            creep.travelTo(controllerContainer);
+          }
+        }
+        // if no link or no container is found...
+        else {
+          creep.getEnergy(true, true);
+        }
       }
     }
   }

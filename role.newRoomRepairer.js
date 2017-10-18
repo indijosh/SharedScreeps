@@ -52,7 +52,7 @@ module.exports = {
         // find exit to target room
         var exitRoom = creep.room.findExitTo(creep.memory.target);
         // move to exit
-        creep.moveTo(creep.pos.findClosestByRange(exitRoom));
+        creep.travelTo(creep.pos.findClosestByRange(exitRoom));
         // return the function to not do anything else
         return;
       }
@@ -81,12 +81,12 @@ module.exports = {
           filter: (s) => s.hits < s.hitsMax && s.structureType != STRUCTURE_WALL
         });
 
-        // if we find one
+        // if we find a structure to repair
         if (structure != undefined) {
           // try to repair it, if it is out of range
           if (creep.repair(structure) == ERR_NOT_IN_RANGE) {
             // move towards it
-            creep.moveTo(structure);
+            creep.travelTo(structure);
           }
         }
         // if we can't fine one

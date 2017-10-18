@@ -7,42 +7,52 @@ module.exports = {
       // switch state
       creep.memory.working = false;
     }
-    // if creep is harvesting energy but is full
+    // if creep is collecting energy but is full
     else if (creep.memory.working == false &&
       creep.carry.energy == creep.carryCapacity ||
       _.sum(creep.carry) == creep.carryCapacity) {
       // switch state
       creep.memory.working = true;
     }
+
     // if creep is supposed to transfer to a structure
     if (creep.memory.working == true) {
+      var enemyCreeps = creep.room.find(FIND_HOSTILE_CREEPS);
       var structure;
-      if (creep.carry.H > 0) {
-        var structure = creep.room.terminal;
+
+      if(enemyCreeps.length > 1){
+        var structures = creep.room.find(FIND_MY_STRUCTURES, {
+          filter: (s) => (s.structureType == STRUCTURE_TOWER)
+        });
+        structure = _.min(structures, 'energy');
       }
 
       // find closest spawn or extension which is not full
       if (structure == undefined) {
-        // find closest spawn or extension which is not full
         structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-          // the second argument for findClosestByPath is an object which takes
-          // a property called filter which can be a function
-          // we use the arrow operator to define it
           filter: (s) => (s.structureType == STRUCTURE_SPAWN ||
               s.structureType == STRUCTURE_EXTENSION) &&
             s.energy < s.energyCapacity
         });
       }
 
-      // find a tower if there aren't any spawns or extensions
+      // put energy in nuker if there is one
       if (structure == undefined) {
         structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-          filter: (s) => (s.structureType == STRUCTURE_TOWER) &&
-            (s.energyCapacity - s.energy) >= _.sum(creep.carry)
+          filter: (s) => s.structureType == STRUCTURE_NUKER &&
+          s.energy < s.energyCapacity
         });
       }
 
-      // look for the terminal first if it has less than 100k energy
+      // find a tower if there aren't any spawns or extensions
+      if (structure == undefined) {
+        var structures = creep.room.find(FIND_MY_STRUCTURES, {
+          filter: (s) => (s.structureType == STRUCTURE_TOWER)
+        });
+        structure = _.min(structures, 'energy');
+      }
+
+      // look for the terminal if it has less than 100k energy
       if (structure == undefined && creep.room.terminal != undefined) {
         structure = creep.room.terminal;
         if (structure.store[RESOURCE_ENERGY] >= 100000) {
@@ -50,7 +60,7 @@ module.exports = {
         }
       }
 
-      // if there is nothing else to put it in, put it in storage
+      // if there is nothing else to put energy in, put it in storage
       if (structure == undefined && creep.room.storage != undefined) {
         structure = creep.room.storage;
       }
@@ -60,39 +70,68 @@ module.exports = {
         // try to transfer energy, if it is not in range
         for (const resourceType in creep.carry) {
           if (creep.transfer(structure, resourceType) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(structure);
+            creep.travelTo(structure);
           }
         }
       }
     }
+
     // if creep is supposed to get energy
     else {
       var container;
-      // look for link by storage
-      var links = _.filter(creep.room.find(FIND_STRUCTURES), s => s.structureType == STRUCTURE_LINK);
+      var controllerContainer;
 
-      // for each link in the room
-      for (let link of links) {
-        let isStorageLink = link.pos.findInRange(FIND_STRUCTURES, 2, {
-          filter: s => s.structureType == STRUCTURE_STORAGE
-        })[0];
-        if (isStorageLink != undefined && link.energy > 0) {
-          container = link;
+      //var storage = _.filter(creep.room.find(FIND_STRUCTURES), s => s.structureType == STRUCTURE_STORAGE);
+
+      // get energy from storage first
+      if (creep.room.storage != undefined) {
+        if (creep.room.storage.store[RESOURCE_ENERGY] > 10000) {
+          container = creep.room.storage;
         }
       }
 
+      // if there is nothing in storage, get energy from link by storage
       if (container == undefined) {
-        // find closest container
-        container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-          filter: s => s.structureType == STRUCTURE_CONTAINER &&
-            s.store[RESOURCE_ENERGY] >= 90
-        });
+        // look for link by storage
+        var links = _.filter(creep.room.find(FIND_STRUCTURES), s => s.structureType == STRUCTURE_LINK);
+
+        // for each link in the room
+        for (let link of links) {
+          let isStorageLink = link.pos.findInRange(FIND_STRUCTURES, 2, {
+            filter: s => s.structureType == STRUCTURE_STORAGE
+          })[0];
+          if (isStorageLink != undefined && link.energy > 0) {
+            container = link;
+          }
+        }
       }
 
-      // if there is no dropped energy or container with energy
-      if (container == undefined && creep.room.energyAvailable != creep.room.energyCapacityAvailable) {
-        // find a storage container to draw energy from
-        container = creep.room.storage;
+      // if there is nothing in storage or if there is nothing in the link,
+      // get energy from a container that isn't by the controller
+      if (container == undefined) {
+        // look for container by controller
+        containerController = creep.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
+          filter: s => s.structureType == STRUCTURE_CONTAINER
+        })[0];
+
+        // if there isn't a container by the controller, look for nearest container
+        if (containerController != undefined) {
+          // find closest container
+          container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+            filter: s => s.structureType == STRUCTURE_CONTAINER &&
+              s.store[RESOURCE_ENERGY] >= 90 &&
+              s.id != containerController.id
+          });
+        }
+
+        // if there is a container by the controller, look for the nearest container
+        // that isn't by the controller
+        else {
+          container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+            filter: s => s.structureType == STRUCTURE_CONTAINER &&
+              s.store[RESOURCE_ENERGY] >= 90
+          });
+        }
       }
 
       // if one was found
@@ -104,8 +143,11 @@ module.exports = {
         // try to withdraw energy, if the container is not in range
         if (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
           // move towards it
-          creep.moveTo(container);
+          creep.travelTo(container);
         }
+      }
+      if (container == undefined && _.sum(creep.carry) > 0){
+        creep.memory.working == true;
       }
     }
   }

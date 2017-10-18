@@ -44,7 +44,7 @@ module.exports = {
         }
         if (structure.length > 0) {
           if (creep.repair(lowest) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(lowest);
+            creep.travelTo(lowest);
           }
         }
       }
@@ -53,7 +53,7 @@ module.exports = {
         // try to repair it, if it is out of range
         if (creep.repair(structure) == ERR_NOT_IN_RANGE) {
           // move towards it
-          creep.moveTo(structure);
+          creep.travelTo(structure);
         }
       }
 

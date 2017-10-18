@@ -20,6 +20,9 @@ module.exports = {
 
     // if creep is supposed to transfer minerals to a structure
     if (creep.memory.working == true) {
+      let mineralSources = creep.room.find(FIND_MINERALS);
+      var mineral = mineralSources[0].mineralType;
+
       // find out if the terminal needs resources
       var structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
         filter: s => (s.structureType == STRUCTURE_TERMINAL)
@@ -36,9 +39,9 @@ module.exports = {
       // if we found one
       if (structure != undefined) {
         // try to transfer minerals, if it is not in range
-        if (creep.transfer(structure, RESOURCE_HYDROGEN) == ERR_NOT_IN_RANGE) {
+        if (creep.transfer(structure, mineral) == ERR_NOT_IN_RANGE) {
           // move towards it
-          creep.moveTo(structure);
+          creep.travelTo(structure);
         }
       }
     }
@@ -46,28 +49,32 @@ module.exports = {
     // if creep is supposed to harvest minerals from source
     else {
       // find out if the container by the extractor is empty
-      let source = Game.getObjectById('598d2239a3a9316748d2c82f');
-      if (source) {
+      let mineralSources = creep.room.find(FIND_MINERALS);
+      let source = Game.getObjectById(mineralSources[0].id);
+      if (source != undefined) {
         // find container next to source if it has hydrogen
         let container = source.pos.findInRange(FIND_STRUCTURES, 1, {
           filter: s => (s.structureType == STRUCTURE_CONTAINER)
         })[0];
-        // withdraw hydrogen from container
-        if (container.store[RESOURCE_HYDROGEN] > 0) {
-          if (creep.withdraw(container, RESOURCE_HYDROGEN) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(container);
-          }
-        } else {
-          var mineralDeposit = Game.getObjectById('598342f6641acf0573578744');
-          if (container) {
-            if (creep.pos.isEqualTo(container.pos)) {
-              // harvest source
-              creep.harvest(mineralDeposit)
+        if(container != undefined){
+          var mineral = mineralSources[0].mineralType;
+          // withdraw hydrogen from container
+          if (container.store[mineral] > 0) {
+            if (creep.withdraw(container, mineral) == ERR_NOT_IN_RANGE) {
+              creep.travelTo(container);
             }
-            // if creep is not on top of the container
-            else {
-              // move towards it
-              creep.moveTo(container);
+          }
+          else {
+            if (container) {
+              if (creep.pos.isEqualTo(container.pos)) {
+                // harvest source
+                creep.harvest(source)
+              }
+              // if creep is not on top of the container
+              else {
+                // move towards it
+                creep.travelTo(container);
+              }
             }
           }
         }

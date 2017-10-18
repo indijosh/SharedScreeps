@@ -23,48 +23,48 @@ StructureTower.prototype.defend =
         if (!isAlly) {
           // ...FIRE!
           this.attack(target);
+          return;
         }
       }
     }
 
-    // if one isn't found
-    if (target == undefined) {
-      if (this.energy > this.energyCapacity / 2) {
-        var walls = this.room.find(FIND_STRUCTURES, {
-          filter: (s) => s.structureType == STRUCTURE_WALL
-        });
-        for (let wall of walls) {
-          if (wall.hits < 2000000) {
-            target = wall;
-          }
-          // if there is one
-          if (target != undefined) {
-            // break the loop
-            break;
+    if (this.energy > this.energyCapacity / 2) {
+      var target,
+        weakestRampart,
+        weakestWall;
+
+
+      // get all walls
+      var walls = this.room.find(FIND_STRUCTURES, {
+        filter: (s) => s.structureType == STRUCTURE_WALL
+      });
+
+      // get all ramparts
+      var ramparts = this.room.find(FIND_STRUCTURES, {
+        filter: (s) => s.structureType == STRUCTURE_RAMPART
+        && s.hits < 10000000
+      });
+      if (walls.length > 0 &&
+        this.room.name != 'E15S13' &&
+        this.room.name != 'E14S17') {
+        weakestWall = _.min(walls, 'hits');
+        target = weakestWall;
+      }
+      if (ramparts.length > 0) {
+        weakestRampart = _.min(ramparts, 'hits');
+        if (weakestWall != undefined){
+          if(weakestRampart.hits < weakestWall.hits){
+            target = weakestRampart;
           }
         }
-        var ramparts = this.room.find(FIND_STRUCTURES, {
-          filter: (s) => s.structureType == STRUCTURE_RAMPART
-        });
-        for (let percentage = 0.0001; percentage <= .1; percentage = percentage + 0.0001) {
-          // find a rampart with less than percentage hits
-          for (let rampart of ramparts) {
-            if (rampart.hits / rampart.hitsMax < percentage) {
-              target = rampart;
-              break
-            }
-          }
-          // if there is one
-          if (target != undefined) {
-             // break the loop
-            break;
-          }
+        else{
+          target = weakestRampart;
         }
       }
-    }
 
-    // if we find a wall that has to be repaired
-    if (target != undefined) {
-      this.repair(target);
+      // if we find something that has to be repaired
+      if (target != undefined) {
+        this.repair(target);
+      }
     }
   };

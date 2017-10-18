@@ -18,7 +18,6 @@
 // This module uses my resources module, which analyzes the state of affairs
 // for every room you can see.
 
-
 "use strict";
 const resources = require('resources');
 const cb = require('callback');

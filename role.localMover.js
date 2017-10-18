@@ -22,7 +22,7 @@ module.exports = {
         // try to transfer energy, if it is not in range
         if (creep.transfer(structure, RESOURCE_OXYGEN) == ERR_NOT_IN_RANGE) {
           // move towards it
-          creep.moveTo(structure);
+          creep.travelTo(structure);
         }
       }
     }
@@ -32,7 +32,7 @@ module.exports = {
       const terminal = Game.getObjectById('596ce85b12cb743678d82cd0');
       if (terminal != undefined) {
         if (creep.withdraw(terminal, RESOURCE_OXYGEN) == ERR_NOT_IN_RANGE) {
-          creep.moveTo(terminal);
+          creep.travelTo(terminal);
         }
       }
     }

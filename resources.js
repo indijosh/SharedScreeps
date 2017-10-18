@@ -18,11 +18,11 @@
 
 // Resource budget is complex.
 // 1. Income averages to 10 energy per tick per source
-// 2. A creep lasts 1500 ticks, 
+// 2. A creep lasts 1500 ticks,
 //    a. takes 3 ticks per body part to build (CREEP_SPAWN_TIME)
 //    b. takes a variable energy cost per body part (BODYPART_COST)
 // 3. Number of structures differs at controller level (CONTROLLER_STRUCTURES, no arrays)
-// 
+//
 
 
 // Determines the number of containers that are adjacent to sources.
@@ -185,6 +185,7 @@ function summarize_room_internal(room) {
         creep_counts,
         creep_energy,
         num_enemies,
+        spawns,
         num_spawns,
         spawns_spawning,
         num_towers,
@@ -195,7 +196,7 @@ function summarize_room_internal(room) {
         ground_resources: reduced_resources,
         num_source_containers,
     };
-    
+
     // console.log('Room ' + room.name + ': ' + JSON.stringify(retval));
     return retval;
 } // summarize_room

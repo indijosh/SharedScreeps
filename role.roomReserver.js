@@ -6,19 +6,24 @@ module.exports = {
       // find exit to target room
       var exit = creep.room.findExitTo(creep.memory.target);
       // move to exit
-      creep.moveTo(creep.pos.findClosestByRange(exit));
+      creep.travelTo(creep.pos.findClosestByRange(exit));
     }
     else {
       creep.room.findExitTo(creep.memory.home);
-      // try to claim controller
-      if (creep.attackController(creep.room.controller) == ERR_NOT_IN_RANGE && Game.spawns['Spawn1'].memory.claimRoom == creep.room.name) {
-        // move towards the controller
-        creep.moveTo(creep.room.controller);
+
+      if(creep.signController(creep.room.controller, "Hi. Please don't hurt me. 💗") == ERR_NOT_IN_RANGE) {
+        creep.travelTo(creep.room.controller);
       }
+
+      // try to claim controller
+      // if (creep.attackController(creep.room.controller) == ERR_NOT_IN_RANGE && Game.spawns['Spawn1'].memory.claimRoom == creep.room.name) {
+      //   // move towards the controller
+      //   creep.travelTo(creep.room.controller);
+      // }
       // try to reserve room
       if (creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) {
         // move towards the controller
-        creep.moveTo(creep.room.controller);
+        creep.travelTo(creep.room.controller);
       }
     }
   }
