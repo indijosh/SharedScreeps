@@ -3,7 +3,7 @@ StructureTerminal.prototype.runMarketAnalysis =
     // find the terminal (Change to run script from terminal later)
     const lookingToBuyHydrogen = false,
       lookingToSellEnergy = false,
-      mineralsToKeep = 5000,
+      mineralsToKeep = 0,
       room = this.room.name;
 
     // select all the keys except for energy
@@ -15,7 +15,7 @@ StructureTerminal.prototype.runMarketAnalysis =
       // check if terminal has minerals to sell
       if (this.store[iteratedMineralType] != undefined && this.store[iteratedMineralType] > mineralsToKeep) {
         // set up constant variables
-        const amountToSell = this.store[iteratedMineralType] - mineralsToKeep,
+        var amountToSell = this.store[iteratedMineralType] - mineralsToKeep,
           maxTransferEnergyCost = this.store[RESOURCE_ENERGY];
 
         // declare mineralCost variable
@@ -44,15 +44,25 @@ StructureTerminal.prototype.runMarketAnalysis =
         // make sure the highestPrice is still above what we want to get paid
         if (highestPrice.price >= mineralCost) {
           // get the transfer energy cost to make sure we can afford the transfer
-          const transferEnergyCost = Game.market.calcTransactionCost(amountToSell, room, highestPrice.roomName);
+          var transferEnergyCost = Game.market.calcTransactionCost(amountToSell, room, highestPrice.roomName);
+          console.log(transferEnergyCost, maxTransferEnergyCost, this.room.name);
+          // if the transfer cost is too high, sell what we can
+          if(transferEnergyCost > maxTransferEnergyCost){
+            while (transferEnergyCost > maxTransferEnergyCost){
+              amountToSell -= 100;
+              transferEnergyCost = Game.market.calcTransactionCost(amountToSell, room, highestPrice.roomName);
+            }
+          }
           if (transferEnergyCost < maxTransferEnergyCost) {
-            // if they are requesting more than we have
+             //if they are requesting more than we have
             if (highestPrice.remainingAmount > amountToSell) {
               // give them what we have
+              console.log("1", Game.market.deal(highestPrice.id, amountToSell, room))
               Game.market.deal(highestPrice.id, amountToSell, room);
             }
             // otherwise give them what they're requesting
             else {
+              console.log("2", Game.market.deal(highestPrice.id, amountToSell, room))
               Game.market.deal(highestPrice.id, highestPrice.remainingAmount, room);
             }
           }

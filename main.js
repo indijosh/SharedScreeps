@@ -15,7 +15,7 @@ var reaction = require('run.reaction');
 module.exports.loop = function() {
   const gameTime = Game.time;
   //profiler.wrap(function() {
-  //Memory.minCostOfMinerals = { H: 1, O: .6, Z: .79};
+  Memory.minCostOfMinerals = { H: .01, O: .01, Z: .01};
   // check for memory entries of died creeps by iterating over Memory.creeps
   for (let name in Memory.creeps) {
     // and checking if the creep is still alive
@@ -58,7 +58,7 @@ module.exports.loop = function() {
   }
 
   // every tenth game tick...
-  if (gameTime % 10 == 0) {
+  //if (gameTime % 10 == 0) {
     // Run marketAnalysis
     var terminals = _.filter(Game.structures, s => s.structureType == STRUCTURE_TERMINAL);
     // for each terminal
@@ -67,7 +67,7 @@ module.exports.loop = function() {
         // run market logic
         terminal.runMarketAnalysis();
       }
-    }
+    //}
 
     // look for rooms that need building attention
     for(let room in myRooms){

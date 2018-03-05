@@ -379,15 +379,6 @@ StructureSpawn.prototype.checkForSKRoomCreeps =
         return;
       }
 
-      // spawn hauler if needed
-      skRoomHauler[roomName] = _.sum(Game.creeps, (c) =>
-        c.memory.role == 'SKRoomHauler' && c.memory.target == roomName)
-
-      if (skRoomHauler[roomName] < this.memory.skRooms[roomName].skRoomHaulers) {
-        name = this.createLongDistanceHauler(maxEnergy, room.name, roomName, true);
-        return;
-      }
-
       // if there's already an attacker and it has less than 200 ticks, start
       // creating another one.
       if (skRoomAttacker[roomName] == 1) {
@@ -401,8 +392,18 @@ StructureSpawn.prototype.checkForSKRoomCreeps =
         }
       }
 
-      // if we can see the room, try to spawn a miner
+      // if we can see the room, start spawning stuff. If we can't,
+      // we need to send in attackers
       if (Game.rooms[roomName]) {
+        // spawn hauler if needed
+        skRoomHauler[roomName] = _.sum(Game.creeps, (c) =>
+          c.memory.role == 'SKRoomHauler' && c.memory.target == roomName)
+
+        if (skRoomHauler[roomName] < this.memory.skRooms[roomName].skRoomHaulers) {
+          name = this.createLongDistanceHauler(maxEnergy, room.name, roomName, true);
+          return;
+        }
+
         // find all the sources in the room
         let sources = Game.rooms[roomName].find(FIND_SOURCES);
         // iterate over all sources
@@ -413,16 +414,6 @@ StructureSpawn.prototype.checkForSKRoomCreeps =
             name = this.createSKMiner(source.id, room.name);
             return;
           }
-        }
-      }
-
-      // if we can't see the room, look for an observer and observe the room
-      else {
-        var observer = this.room.find(FIND_MY_STRUCTURES, {
-          filter: s => s.structureType == STRUCTURE_OBSERVER
-        });
-        if (observer != undefined) {
-          observer.observeRoom(room);
         }
       }
     }

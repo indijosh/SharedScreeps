@@ -4,7 +4,7 @@ StructureTower.prototype.defend =
     // find closes hostile creep
     var target = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
 
-    // if one is found...
+    // if a hostile creep is found
     if (target != undefined) {
       //this.attack(target);
       var bodyHasAttackPart = false
@@ -29,10 +29,18 @@ StructureTower.prototype.defend =
     }
 
     if (this.energy > this.energyCapacity / 2) {
+      // heal creeps in room
+      var creepsInRoom = this.room.find(FIND_MY_CREEPS);
+      for(let creep in creepsInRoom){
+        if (creep.hits < creep.hitsMax){
+          this.heal(creep);
+        }
+      }
+
+      // repair walls and ramparts
       var target,
         weakestRampart,
         weakestWall;
-
 
       // get all walls
       var walls = this.room.find(FIND_STRUCTURES, {

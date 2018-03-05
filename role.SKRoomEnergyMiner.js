@@ -185,9 +185,16 @@ module.exports = {
         var constructionSiteBySource = source.pos.findInRange(FIND_CONSTRUCTION_SITES, 1);
         // if there isn't a construction site by the source, create one
         if (constructionSiteBySource == undefined || constructionSiteBySource == '' || constructionSiteBySource == null) {
-          var energyBySourceForConstructionSpot = source.pos.findInRange(FIND_DROPPED_RESOURCES, 1);
-          if (energyBySourceForConstructionSpot.length > 1) {
-            energyBySourceForConstructionSpot[0].pos.createConstructionSite(STRUCTURE_CONTAINER)
+          var offsetx, offsety = 0;
+          buildSite:
+          for (var offsetx = -1; offsetx < 3; offsetx++) {
+            for (var offsety = -1; offsety < 3; offsety++) {
+              console.log(source.pos.x + offsetx, source.pos.y + offsety, creep.room.createConstructionSite(source.pos.x + offsetx, source.pos.y + offsety, STRUCTURE_CONTAINER))
+              if(creep.room.createConstructionSite(source.pos.x + offsetx, source.pos.y + offsety, STRUCTURE_CONTAINER) == 0){
+                creep.room.createConstructionSite(source.pos.x + offsetx, source.pos.y + offsety, STRUCTURE_CONTAINER);
+                break buildSite;
+              }
+            }
           }
         }
 

@@ -44,7 +44,7 @@ Creep.prototype.getEnergy =
       // find closest container or storage with energy
       container = this.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: s => (s.structureType == STRUCTURE_CONTAINER ||
-          s.structureType == STRUCTURE_STORAGE) &&
+            s.structureType == STRUCTURE_STORAGE) &&
           s.store[RESOURCE_ENERGY] > 0
       });
 
@@ -72,71 +72,52 @@ Creep.prototype.getEnergy =
 Creep.prototype.depositEnergy =
   function() {
     creep = this;
-    let targets = [];
-    var structure;
+    var targetStructure;
     var controllerContainer;
     var homeRoom = Game.rooms[creep.memory.home];
 
-    if(creep.room.energyAvailable == creep.room.energyCapacityAvailable){
-      // look for container by controller
-      controllerContainer = this.room.controller.pos.findInRange(FIND_STRUCTURES, 3, {
-        filter: s => s.structureType == STRUCTURE_CONTAINER &&
-          s.store[RESOURCE_ENERGY] < s.storeCapacity
-      })[0];
-    }
-
-    if (controllerContainer != undefined) {
-      targets.push(controllerContainer);
-    }
-
-    // find closest spawn or extension which is not full
-    if (structure == undefined) {
-      // find closest spawn or extension which is not full
-      structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-        // the second argument for findClosestByPath is an object which takes
-        // a property called filter which can be a function
-        // we use the arrow operator to define it
-        filter: (s) => (s.structureType == STRUCTURE_SPAWN ||
-            s.structureType == STRUCTURE_EXTENSION) &&
-          s.energy < s.energyCapacity
+    // if we can see our home room...
+    if (homeRoom != undefined) {
+      // look for storage
+      targetStructure = homeRoom.find(FIND_MY_STRUCTURES, {
+        filter: (s) => s.structureType == STRUCTURE_STORAGE &&
+          _.sum(s.store) < s.storeCapacity
       });
-    }
-
-    // find a tower if there aren't any spawns or extensions
-    if (structure == undefined) {
-      structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-        filter: (s) => (s.structureType == STRUCTURE_TOWER) &&
-          (s.energyCapacity - s.energy) >= _.sum(creep.carry)
-      });
-    }
-
-    // look for the terminal first if it has less than 100k energy
-    if (structure == undefined && creep.room.terminal != undefined) {
-      if (creep.room.terminal.store[RESOURCE_ENERGY] <= 50000) {
-        structure = creep.room.terminal;
-      }
-    }
-
-    // if there is nothing else to put it in, put it in storage
-    if (structure == undefined && creep.room.storage != undefined) {
-      structure = creep.room.storage;
-    }
-
-    if (structure != undefined) {
-      targets.push(structure)
-    }
-
-    if (targets.length > 1) {
-      structure = creep.pos.findClosestByRange(targets);
-    }
-
-    // if we found something to put it in
-    if (structure != undefined) {
-      // try to transfer energy, if it is not in range
-      for (const resourceType in creep.carry) {
-        if (creep.transfer(structure, resourceType) == ERR_NOT_IN_RANGE) {
-          creep.travelTo(structure, {maxRooms: 1});
+      
+        // if we found a target
+      if (targetStructure != undefined) {
+        // try to transfer energy, if it is not in range
+        for (const resourceType in creep.carry) {
+          if (creep.transfer(targetStructure[0], resourceType) == ERR_NOT_IN_RANGE) {
+            creep.travelTo(targetStructure[0]);
+          }
         }
       }
+
+      // if the storage is full, drop it into the container by the controller
+      if (targetStructure == undefined) {
+        controllerContainer = homeRoom.controller.pos.findInRange(FIND_STRUCTURES, 3, {
+         filter: s => s.structureType == STRUCTURE_CONTAINER &&
+            s.store[RESOURCE_ENERGY] < s.storeCapacity
+        })[0];
+        if (controllerContainer != undefined) {
+          targetStructure = controllerContainer;
+        }
+      }
+
+      // if the storage and the controllerContainer are full, store it in the terminal
+      if (targetStructure == undefined) {
+        if (homeRoom.terminal != undefined) {
+          if (homeRoom.terminal.store[RESOURCE_ENERGY] <= 50000) {
+            targetStructure = homeRoom.terminal;
+          }
+        }
+      }
+
+      
+    }
+    // if we can't see our home room, set up a scouting mission to go to it
+    else {
+      console.log("Cannot see room ", homeRoom);
     }
   }

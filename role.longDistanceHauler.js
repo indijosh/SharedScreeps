@@ -86,13 +86,13 @@ module.exports = {
 
         // if creep cannot find a target container, move to the idle flag
         else {
-          idleFlag = _.find(Game.flags, (c) =>
-            c.room.name == creep.memory.target);
-          if (idleFlag != undefined) {
-            if (!creep.pos.inRangeTo(idleFlag, 1)) {
-              creep.travelTo(idleFlag.pos);
-            }
-          }
+          // idleFlag = _.find(Game.flags, (c) =>
+          //   c.room.name == creep.memory.target);
+          // if (idleFlag != undefined) {
+          //   if (!creep.pos.inRangeTo(idleFlag, 1)) {
+          //     creep.travelTo(idleFlag.pos);
+          //   }
+          // }
         }
       }
 

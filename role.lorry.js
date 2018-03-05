@@ -27,7 +27,7 @@ module.exports = {
         structure = _.min(structures, 'energy');
       }
 
-      // find closest spawn or extension which is not full
+    // find closest spawn or extension which is not full
       if (structure == undefined) {
         structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
           filter: (s) => (s.structureType == STRUCTURE_SPAWN ||
@@ -37,20 +37,20 @@ module.exports = {
       }
 
       // put energy in nuker if there is one
-      if (structure == undefined) {
-        structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-          filter: (s) => s.structureType == STRUCTURE_NUKER &&
-          s.energy < s.energyCapacity
-        });
-      }
+    //  if (structure == undefined) {
+     //   structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+     //     filter: (s) => s.structureType == STRUCTURE_NUKER &&
+    //      s.energy < s.energyCapacity
+   //     });
+  //    }
 
       // find a tower if there aren't any spawns or extensions
-      if (structure == undefined) {
-        var structures = creep.room.find(FIND_MY_STRUCTURES, {
-          filter: (s) => (s.structureType == STRUCTURE_TOWER)
-        });
-        structure = _.min(structures, 'energy');
-      }
+     // if (structure == undefined) {
+      //  var structures = creep.room.find(FIND_MY_STRUCTURES, {
+       //   filter: (s) => (s.structureType == STRUCTURE_TOWER)
+     //   });
+    //    structure = _.min(structures, 'energy');
+   //   }
 
       // look for the terminal if it has less than 100k energy
       if (structure == undefined && creep.room.terminal != undefined) {
@@ -59,6 +59,8 @@ module.exports = {
           structure = undefined;
         }
       }
+
+      
 
       // if there is nothing else to put energy in, put it in storage
       if (structure == undefined && creep.room.storage != undefined) {

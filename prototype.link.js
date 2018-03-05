@@ -5,7 +5,8 @@ StructureLink.prototype.findLinkType = function() {
     if (this.energy == this.energyCapacity && this.cooldown == 0) {
       var storageLink = this.findStorageLink();
       if (storageLink != undefined) {
-        this.transferEnergy(storageLink, this.energy);
+        var availableStorageSpace = storageLink.energyCapacity - storageLink.energy;
+        this.transferEnergy(storageLink, availableStorageSpace);
       }
     }
   } else {
@@ -17,8 +18,8 @@ StructureLink.prototype.findLinkType = function() {
       if (this.room.energyAvailable == this.room.energyCapacityAvailable && this.energy > 0 && this.cooldown == 0) {
         var controllerLink = this.findControllerLink();
         if (controllerLink != undefined) {
-          // FIND OUT HOW TO SEND ENERGY TO LINK THAT IS ONLY PARTIALLY FULL
-          this.transferEnergy(controllerLink, this.energy);
+          var availableStorageSpace = controllerLink.energyCapacity - controllerLink.energy;
+          this.transferEnergy(controllerLink, availableStorageSpace);
         }
       }
     }
